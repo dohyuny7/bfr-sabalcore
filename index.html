@@ -10,31 +10,31 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0a0c10;
-    --bg-card: rgba(13,17,23,0.85);
-    --bg-input: #060810;
-    --bg-input-lit: #080e18;
-    --border: #1c2030;
-    --border-lit: #0a3060;
-    --text: #f0f0f0;
-    --text-secondary: #8aaac8;
-    --text-tertiary: #3a5070;
-    --accent: #0055b3;
-    --accent-dim: rgba(0,85,179,0.1);
-    --accent-border: rgba(0,85,179,0.25);
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-input: #0d1117;
+    --border: #21262d;
+    --border-lit: #1f6feb;
+    --text: #f0f6fc;
+    --text-secondary: #8b949e;
+    --text-tertiary: #484f58;
+    --accent: #1f6feb;
+    --accent-bright: #58a6ff;
+    --accent-dim: rgba(31,111,235,0.1);
+    --accent-border: rgba(31,111,235,0.3);
     --gold: #FDB515;
-    --gold-dim: rgba(253,181,21,0.08);
+    --gold-dim: rgba(253,181,21,0.07);
     --gold-border: rgba(253,181,21,0.22);
-    --success: #40a870;
-    --success-dim: rgba(50,180,100,0.08);
-    --success-border: rgba(50,180,100,0.25);
-    --danger: #c05050;
-    --danger-dim: rgba(180,50,50,0.08);
-    --danger-border: rgba(160,50,50,0.25);
+    --success: #3fb950;
+    --success-dim: rgba(63,185,80,0.1);
+    --success-border: rgba(63,185,80,0.3);
+    --danger: #f85149;
+    --danger-dim: rgba(248,81,73,0.08);
+    --danger-border: rgba(248,81,73,0.3);
     --mono: 'JetBrains Mono', monospace;
     --sans: 'Inter', system-ui, sans-serif;
-    --radius: 8px;
-    --radius-lg: 10px;
+    --radius: 6px;
+    --radius-lg: 8px;
   }
 
   html, body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
@@ -43,226 +43,217 @@
 
   .topbar {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10,12,16,0.92);
+    background: rgba(13,17,23,0.94);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: 0 24px; height: 56px;
+    padding: 0 24px; height: 54px;
     display: flex; align-items: center; justify-content: space-between;
   }
 
-  .brand { display: flex; align-items: center; gap: 12px; }
-
-  .emblem {
-    width: 34px; height: 34px; background: var(--gold);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; color: #0a0c10;
-    transition: transform 0.2s; cursor: default; flex-shrink: 0;
-  }
-  .emblem:hover { transform: rotate(-5deg) scale(1.08); }
-
-  .brand-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
-  .brand-sub { font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.04em; }
+  .brand-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .brand-sub { font-size: 11px; color: var(--text-tertiary); }
 
   .tabs {
-    display: flex; background: #0d1117;
-    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    display: flex; background: var(--bg);
+    border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;
   }
-  .tab { padding: 6px 16px; font-size: 12px; font-weight: 500; color: var(--text-tertiary); cursor: pointer; transition: all 0.2s; user-select: none; }
-  .tab.active { background: #003B7A; color: #c0d8f0; }
-  .tab:hover:not(.active) { color: var(--text-secondary); background: rgba(0,60,120,0.08); }
+  .tab { padding: 6px 16px; font-size: 12px; font-weight: 500; color: var(--text-tertiary); cursor: pointer; transition: all 0.18s; user-select: none; }
+  .tab.active { background: #161b22; color: var(--accent-bright); border-bottom: 2px solid var(--accent); }
+  .tab:hover:not(.active) { color: var(--text-secondary); background: rgba(255,255,255,0.03); }
   .tab-sep { width: 1px; background: var(--border); }
 
-  .main { max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
+  .main { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
 
-  .view { display: flex; flex-direction: column; gap: 12px; }
+  .view { display: flex; flex-direction: column; gap: 10px; }
   .view.hidden { display: none; }
 
   .notice {
-    background: #0d1520; border-left: 3px solid var(--accent);
-    border-radius: 0 7px 7px 0; padding: 9px 13px;
-    font-size: 11.5px; color: #5580aa; line-height: 1.6;
+    background: rgba(31,111,235,0.06); border: 1px solid var(--accent-border);
+    border-radius: var(--radius); padding: 9px 13px;
+    font-size: 11.5px; color: #4c82c5; line-height: 1.6;
   }
 
   .card {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: var(--radius-lg); padding: 16px 18px;
-    backdrop-filter: blur(4px); transition: border-color 0.3s;
+    transition: border-color 0.2s;
   }
-  .card:hover { border-color: #1e3050; }
-  .card.complete { border-color: #0a3860; box-shadow: 0 0 0 1px rgba(0,85,179,0.12); }
+  .card:hover { border-color: #30363d; }
 
-  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; }
   .section-num {
     width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
     display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700; color: #c0d8f0; flex-shrink: 0;
-    transition: all 0.4s;
+    font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+    transition: all 0.35s;
   }
-  .section-num.done { background: var(--gold); color: #0a0c10; transform: scale(1.15); }
-  .section-title { font-size: 12px; font-weight: 600; color: #c0c8d8; letter-spacing: 0.02em; }
+  .section-num.done { background: var(--gold); color: #0d1117; transform: scale(1.12); }
+  .section-title { font-size: 12px; font-weight: 600; color: #c9d1d9; letter-spacing: 0.01em; }
 
-  .checklist { display: flex; flex-direction: column; gap: 5px; }
+  .checklist { display: flex; flex-direction: column; gap: 4px; }
   .check-item {
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 9px 11px; border-radius: 7px;
-    cursor: pointer; transition: all 0.25s; user-select: none;
+    padding: 8px 10px; border-radius: var(--radius);
+    cursor: pointer; transition: all 0.2s; user-select: none;
     background: var(--gold-dim); border: 1px solid var(--gold-border);
   }
   .check-item.done { background: var(--accent-dim); border-color: var(--accent-border); }
   .check-item:hover { transform: translateX(2px); }
   .cb {
-    width: 15px; height: 15px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
-    border: 1.5px solid rgba(253,181,21,0.45); background: transparent;
+    width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.18s;
+    border: 1.5px solid rgba(253,181,21,0.4); background: transparent;
   }
-  .cb.checked { background: var(--accent); border-color: #0066cc; }
-  .check-label { font-size: 12px; font-weight: 500; color: #dde4ee; transition: color 0.2s; }
-  .check-item.done .check-label { color: #8ab0d8; }
-  .check-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+  .cb.checked { background: var(--accent); border-color: var(--accent-bright); }
+  .check-label { font-size: 12px; font-weight: 500; color: #e6edf3; }
+  .check-item.done .check-label { color: var(--text-secondary); }
+  .check-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
 
-  .progress-row { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
-  .prog-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .prog-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 2px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1), background 0.4s; }
-  .prog-fill.celebrate { animation: celebrate 0.6s ease; }
-  @keyframes celebrate { 0%,100% { transform: scaleX(1); } 40% { transform: scaleX(1.02); } 70% { transform: scaleX(0.99); } }
-  .prog-label { font-size: 11px; font-weight: 600; color: #c89010; min-width: 170px; text-align: right; transition: color 0.3s; }
+  .progress-row { margin-top: 11px; display: flex; align-items: center; gap: 10px; }
+  .prog-track { flex: 1; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 2px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1), background 0.35s; }
+  .prog-fill.celebrate { animation: celebrate 0.5s ease; }
+  @keyframes celebrate { 0%,100% { transform: scaleX(1); } 40% { transform: scaleX(1.015); } }
+  .prog-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); min-width: 170px; text-align: right; transition: color 0.3s; }
 
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .field { display: flex; flex-direction: column; gap: 5px; }
   .field label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
 
   input[type=text], input[type=password], input[type=file], select {
-    width: 100%; height: 36px; padding: 0 12px;
+    width: 100%; height: 34px; padding: 0 10px;
     background: var(--bg-input); border: 1px solid var(--border);
     border-radius: var(--radius); color: var(--text);
     font-size: 12px; font-family: var(--sans);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.18s, box-shadow 0.18s;
     appearance: none; -webkit-appearance: none;
   }
   input[type=text]:focus, input[type=password]:focus, select:focus {
     outline: none; border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,85,179,0.15);
+    box-shadow: 0 0 0 3px rgba(31,111,235,0.12);
   }
-  input[type=file] { height: auto; padding: 8px 12px; cursor: pointer; color: var(--text-secondary); }
+  input[type=file] { height: auto; padding: 7px 10px; cursor: pointer; color: var(--text-secondary); }
   input::placeholder { color: var(--text-tertiary); }
   select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233a5070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23484f58' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
     background-color: var(--bg-input);
   }
-  select option { background: #0d1117; }
+  select option { background: #161b22; }
 
   .hint { font-size: 10px; color: var(--text-tertiary); }
-  .hint-warn { font-size: 11px; color: #8a6010; background: #0f0c00; border: 1px solid var(--gold-border); border-radius: 6px; padding: 5px 9px; line-height: 1.5; }
-  .hint-blue { font-size: 11px; color: #3a6aaa; background: var(--bg-input-lit); border: 1px solid var(--border-lit); border-radius: 6px; padding: 5px 9px; line-height: 1.5; }
+  .hint-warn { font-size: 11px; color: #9a7020; background: rgba(253,181,21,0.05); border: 1px solid var(--gold-border); border-radius: var(--radius); padding: 5px 9px; line-height: 1.5; }
 
   .slider-row { display: flex; align-items: center; gap: 10px; }
-  input[type=range] { flex: 1; accent-color: var(--gold); cursor: pointer; height: 3px; }
-  .cores-pill { display: inline-flex; font-size: 11px; color: #4478bb; background: var(--bg-input-lit); border: 1px solid var(--border-lit); border-radius: 20px; padding: 2px 10px; margin-top: 4px; font-weight: 500; }
+  input[type=range] { flex: 1; accent-color: var(--accent-bright); cursor: pointer; }
+  .cores-pill { display: inline-flex; font-size: 11px; color: var(--accent-bright); background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 20px; padding: 2px 10px; margin-top: 4px; font-weight: 500; }
 
   .pbs-preview {
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent);
-    border-radius: var(--radius); padding: 13px 15px;
+    border-radius: var(--radius); padding: 12px 14px;
     font-family: var(--mono); font-size: 11px; line-height: 1.9;
-    white-space: pre; overflow-x: auto;
+    white-space: pre; overflow-x: auto; color: #8b949e;
   }
-  .pbs-preview .k { color: #5599dd; }
-  .pbs-preview .v { color: #4aaa7a; }
+  .pbs-preview .k { color: var(--accent-bright); }
+  .pbs-preview .v { color: #7ee787; }
   .pbs-preview .s { color: var(--gold); }
-  .pbs-preview .d { color: #2a3848; }
 
   .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   .btn {
-    height: 34px; padding: 0 16px; border-radius: var(--radius);
+    height: 32px; padding: 0 14px; border-radius: var(--radius);
     font-size: 12px; font-weight: 500; font-family: var(--sans);
-    cursor: pointer; transition: all 0.18s; user-select: none;
-    display: flex; align-items: center; gap: 7px;
+    cursor: pointer; transition: all 0.15s; user-select: none;
+    display: flex; align-items: center; gap: 6px;
     position: relative; overflow: hidden;
   }
   .btn:active { transform: scale(0.96); }
-  .btn-primary { background: #003B7A; color: #c8dff0; border: 1px solid var(--accent); }
-  .btn-primary:hover { background: #004d9e; border-color: #0066cc; }
-  .btn-ghost { background: transparent; color: #5a7090; border: 1px solid var(--border); }
-  .btn-ghost:hover { background: #0d1117; color: var(--text-secondary); border-color: #2a3848; }
+  .btn-primary { background: rgba(31,111,235,0.15); color: var(--accent-bright); border: 1px solid var(--accent-border); }
+  .btn-primary:hover { background: rgba(31,111,235,0.25); border-color: var(--accent-bright); }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.04); border-color: #30363d; color: var(--text); }
   .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger-border); }
-  .btn-danger:hover { background: var(--danger-dim); border-color: rgba(180,60,60,0.4); }
-  .btn-warn { background: transparent; color: #666; border: 1px solid var(--border); }
-  .btn-warn:hover { color: #888; border-color: #2a3848; }
+  .btn-danger:hover { background: var(--danger-dim); }
+  .btn-warn { background: transparent; color: #6e7681; border: 1px solid var(--border); }
+  .btn-warn:hover { color: var(--text-secondary); border-color: #30363d; }
 
   .submit-btn {
-    width: 100%; height: 46px; background: var(--gold); border-radius: 9px;
+    width: 100%; height: 44px; background: var(--gold); border-radius: var(--radius-lg);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800; color: #0a0c10; gap: 8px;
-    cursor: pointer; transition: all 0.25s; user-select: none;
+    font-size: 13px; font-weight: 700; color: #0d1117; gap: 8px;
+    cursor: pointer; transition: all 0.2s; user-select: none;
     border: none; font-family: var(--sans);
     position: relative; overflow: hidden;
   }
-  .submit-btn:hover:not(.disabled) { background: #ffc933; transform: translateY(-1px); box-shadow: 0 4px 24px rgba(253,181,21,0.28); }
+  .submit-btn:hover:not(.disabled) { background: #ffc62d; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(253,181,21,0.25); }
   .submit-btn:active:not(.disabled) { transform: translateY(0) scale(0.99); }
-  .submit-btn.disabled { background: #1a1e28; color: #2a3848; cursor: not-allowed; transform: none; box-shadow: none; }
-  .submit-btn.unlock-glow { animation: unlockGlow 0.7s ease forwards; }
-  @keyframes unlockGlow { 0% { box-shadow: 0 0 0 0 rgba(253,181,21,0); } 40% { box-shadow: 0 0 28px 10px rgba(253,181,21,0.4); } 100% { box-shadow: 0 0 0 0 rgba(253,181,21,0.1); } }
+  .submit-btn.disabled { background: #21262d; color: #484f58; cursor: not-allowed; transform: none; box-shadow: none; }
+  .submit-btn.unlock-glow { animation: unlockGlow 0.65s ease forwards; }
+  @keyframes unlockGlow { 0% { box-shadow: 0 0 0 0 rgba(253,181,21,0); } 45% { box-shadow: 0 0 24px 8px rgba(253,181,21,0.35); } 100% { box-shadow: 0 0 0 0 rgba(253,181,21,0.08); } }
 
-  .divider { height: 1px; background: var(--border); position: relative; margin: 4px 0; }
+  .divider { height: 1px; background: var(--border); position: relative; margin: 6px 0; }
   .divider-label {
     position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
     background: var(--bg); padding: 0 10px;
-    font-size: 10px; color: #2a3848; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 10px; color: var(--text-tertiary); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
   }
 
-  .status-banner {
-    padding: 9px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500;
-    margin-bottom: 10px; display: none;
-  }
+  .status-banner { padding: 9px 14px; border-radius: var(--radius); font-size: 12px; font-weight: 500; display: none; }
   .status-banner.show { display: block; }
   .status-banner.ok { background: var(--success-dim); border: 1px solid var(--success-border); color: var(--success); }
   .status-banner.err { background: var(--danger-dim); border: 1px solid var(--danger-border); color: var(--danger); }
   .status-banner.warn { background: var(--gold-dim); border: 1px solid var(--gold-border); color: #c89010; }
 
-  .job-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .job-id { font-family: var(--mono); font-size: 13px; color: #4488cc; font-weight: 600; }
-  .state-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .job-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .job-id { font-family: var(--mono); font-size: 13px; color: var(--accent-bright); font-weight: 500; }
+  .state-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
   .state-Q { background: var(--gold-dim); color: #c89010; border: 1px solid var(--gold-border); }
-  .state-R { background: var(--accent-dim); color: #4488cc; border: 1px solid var(--accent-border); }
+  .state-R { background: var(--accent-dim); color: var(--accent-bright); border: 1px solid var(--accent-border); }
   .state-C { background: var(--success-dim); color: var(--success); border: 1px solid var(--success-border); }
-  .state-unknown { background: #0d1117; color: #444; border: 1px solid var(--border); }
-  .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: blink 1.5s infinite; }
-  .pulse-dot.blue { background: #4488cc; }
+  .state-unknown { background: #161b22; color: #484f58; border: 1px solid var(--border); }
+  .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: blink 1.4s infinite; }
+  .pulse-dot.blue { background: var(--accent-bright); }
   .pulse-dot.amber { background: #c89010; }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.15; } }
 
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .stat-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; }
-  .stat-label { font-size: 9px; color: #2a3848; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-  .stat-value { font-size: 15px; font-weight: 600; color: #e8eef8; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .stat-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 11px; }
+  .stat-label { font-size: 9px; color: var(--text-tertiary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+  .stat-value { font-size: 14px; font-weight: 600; color: #e6edf3; }
 
   .output-box {
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--gold);
     border-radius: 0 var(--radius) var(--radius) 0;
-    padding: 10px 13px; font-family: var(--mono); font-size: 11px; line-height: 1.8;
-    white-space: pre-wrap; min-height: 48px; margin-bottom: 12px;
-    color: #2a4060; transition: opacity 0.3s;
+    padding: 10px 12px; font-family: var(--mono); font-size: 11px; line-height: 1.8;
+    white-space: pre-wrap; min-height: 44px; margin-bottom: 10px;
+    color: #484f58; transition: opacity 0.25s;
   }
 
   .sftp-block {
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent);
     border-radius: 0 var(--radius) var(--radius) 0;
-    padding: 10px 13px; font-size: 11.5px; color: #5a7a9a; line-height: 1.7; margin-bottom: 12px;
+    padding: 9px 12px; font-size: 11.5px; color: #4c6a8a; line-height: 1.7; margin-bottom: 10px;
   }
   .sftp-block strong { color: var(--text-secondary); font-weight: 500; }
 
-  .manual-cmd { background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 13px; font-family: var(--mono); font-size: 12px; color: #7ab8d8; display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+  .manual-cmd {
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--accent-bright);
+    display: flex; align-items: center; justify-content: space-between; margin-top: 6px;
+  }
   .copy-btn { font-size: 11px; color: var(--text-tertiary); cursor: pointer; background: none; border: none; font-family: var(--sans); transition: color 0.1s; padding: 0; }
   .copy-btn:hover { color: var(--text); }
   .copy-btn.copied { color: var(--success); }
 
-  code { font-family: var(--mono); font-size: 11.5px; background: var(--bg-input); padding: 1px 5px; border-radius: 4px; color: #7ab8d8; }
+  code { font-family: var(--mono); font-size: 11px; background: rgba(110,118,129,0.1); padding: 1px 6px; border-radius: 4px; color: var(--accent-bright); border: 1px solid rgba(110,118,129,0.2); }
 
-  .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15); transform: scale(0); animation: rippleAnim 0.5s linear; pointer-events: none; }
+  .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.12); transform: scale(0); animation: rippleAnim 0.45s linear; pointer-events: none; }
   @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
 
+  .hidden { display: none !important; }
+
   @media (max-width: 600px) {
-    .main { padding: 16px 14px 50px; }
+    .main { padding: 16px 12px 50px; }
     .row { grid-template-columns: 1fr; }
     .topbar { padding: 0 14px; }
   }
@@ -273,12 +264,9 @@
 <canvas id="bgcanvas"></canvas>
 
 <div class="topbar">
-  <div class="brand">
-    <div class="emblem">BFR</div>
-    <div>
-      <div class="brand-title">Sabalcore job generator</div>
-      <div class="brand-sub">Berkeley Formula Racing · Internal tool</div>
-    </div>
+  <div>
+    <div class="brand-title">Sabalcore job generator</div>
+    <div class="brand-sub">Berkeley Formula Racing</div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('submit')">Submit job</div>
@@ -292,17 +280,17 @@
   <div class="view" id="view-submit">
 
     <div class="notice">
-      The Sabalcore terminal does not support Ctrl+V. Use <strong style="color:#88aad0;">Shift+Insert</strong> to paste in the terminal instead.
+      The Sabalcore terminal does not support Ctrl+V. Use <strong style="color:#7aa8d8;">Shift+Insert</strong> to paste in the terminal instead.
     </div>
 
     <div class="status-banner" id="status-banner"></div>
 
-    <div class="card" id="card-checklist">
+    <div class="card">
       <div class="section-header">
         <div class="section-num" id="num1">1</div>
         <span class="section-title">Pre-flight checklist</span>
       </div>
-      <div class="checklist" id="checklist">
+      <div class="checklist">
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="cb"></div>
           <div><div class="check-label">Mesh cleared in STAR-CCM+</div><div class="check-sub">File → Clear Generated Mesh before saving. Sabalcore handles meshing.</div></div>
@@ -313,11 +301,11 @@
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="cb"></div>
-          <div><div class="check-label">Convergence criterion enabled</div><div class="check-sub">Confirm drag criterion is active, not just defined</div></div>
+          <div><div class="check-label">Convergence criterion enabled</div><div class="check-sub">Confirm at least one monitor stopping criteria is active. This lets us terminate early and save credits.</div></div>
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="cb"></div>
-          <div><div class="check-label">Force reports configured correctly</div><div class="check-sub">Drag, downforce, moments — correct reference area and direction</div></div>
+          <div><div class="check-label">Force reports configured correctly</div><div class="check-sub">All reports set with correct reference area and direction</div></div>
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="cb"></div>
@@ -383,10 +371,10 @@
           <label>Nodes (<span id="nodes-label">8</span>)</label>
           <div class="slider-row">
             <input type="range" min="1" max="16" value="8" id="nodes" step="1" oninput="updateCores()">
-            <span style="font-size:12px;font-weight:600;color:#e0e0e0;min-width:20px;" id="nodes-val">8</span>
+            <span style="font-size:12px;font-weight:600;color:#c9d1d9;min-width:20px;" id="nodes-val">8</span>
           </div>
           <div class="cores-pill" id="cores-pill">128 total cores</div>
-          <div class="hint-warn" id="cores-warn" style="margin-top:6px;">Keep cores at 128 unless you know what you are doing. If unsure, ask Dohyun.</div>
+          <div class="hint-warn" id="cores-warn" style="margin-top:6px;">Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!</div>
         </div>
       </div>
     </div>
@@ -399,7 +387,7 @@
       <div class="pbs-preview" id="pbs-preview"></div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="downloadPBS(); rippleEl(this)">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 6l3 3 3-3M1 10h10" stroke="#c8dff0" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v6M3 5l2.5 2.5L8 5M1 9.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Download run.pbs
         </button>
         <button class="btn btn-ghost" onclick="copyPBS(); rippleEl(this)" id="copy-pbs-btn">Copy to clipboard</button>
@@ -413,7 +401,7 @@
 
     <div class="divider"><span class="divider-label">Job status</span></div>
 
-    <div class="card hidden" id="status-card" style="margin-top:6px;">
+    <div class="card hidden" id="status-card" style="margin-top:4px;">
       <div class="job-header">
         <span class="job-id" id="status-job-id"></span>
         <span class="state-badge state-unknown" id="status-badge">...</span>
@@ -447,7 +435,7 @@
 
     <div class="card">
       <div class="section-header"><div class="section-num">1</div><span class="section-title">Transfer files to Sabalcore</span></div>
-      <p style="font-size:12px;color:#5a7a9a;line-height:1.7;">In ssClient go to <strong style="color:#8aaac8;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#8aaac8;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
+      <p style="font-size:12px;color:#4c6a8a;line-height:1.7;">In ssClient go to <strong style="color:#8b949e;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#8b949e;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
     </div>
 
     <div class="card">
@@ -461,25 +449,16 @@
     <div class="card">
       <div class="section-header"><div class="section-num">3</div><span class="section-title">Job states</span></div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span class="state-badge state-Q" style="min-width:52px;justify-content:center;">Q</span>
-          <span style="font-size:12px;color:#5a7a9a;">Queued — waiting for nodes. No credits charged.</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span class="state-badge state-R" style="min-width:52px;justify-content:center;">R</span>
-          <span style="font-size:12px;color:#5a7a9a;">Running — credits are being consumed.</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span class="state-badge state-C" style="min-width:52px;justify-content:center;">C</span>
-          <span style="font-size:12px;color:#5a7a9a;">Complete — transfer results via SFTP from ~/bfr/.</span>
-        </div>
+        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-Q" style="min-width:50px;justify-content:center;">Q</span><span style="font-size:12px;color:#4c6a8a;">Queued — waiting for nodes. No credits charged.</span></div>
+        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-R" style="min-width:50px;justify-content:center;">R</span><span style="font-size:12px;color:#4c6a8a;">Running — credits are being consumed.</span></div>
+        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-C" style="min-width:50px;justify-content:center;">C</span><span style="font-size:12px;color:#4c6a8a;">Complete — transfer results via SFTP from ~/bfr/.</span></div>
       </div>
     </div>
 
     <div class="card">
       <div class="section-header"><div class="section-num">4</div><span class="section-title">Live output while running</span></div>
       <div class="manual-cmd"><span>tail -f ~/.pbs_spool/JOBID.jman.OU</span><button class="copy-btn" onclick="copyCmd(this,'tail -f ~/.pbs_spool/JOBID.jman.OU')">copy</button></div>
-      <p style="font-size:11px;color:#3a5070;margin-top:8px;">Replace JOBID with your actual job number. Press Ctrl+C to stop.</p>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-top:8px;">Replace JOBID with your actual job number. Press Ctrl+C to stop.</p>
     </div>
 
     <div class="card">
@@ -494,11 +473,9 @@
 
 <script>
   const BACKEND_URL = 'https://resample-phoniness-partridge.ngrok-free.dev';
-  const checks_ids = Array.from(document.querySelectorAll('.check-item'));
   let checkedCount = 0;
   let currentJobId = null;
   let currentCreds = null;
-  let currentSimFile = null;
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -511,17 +488,13 @@
     const cb = el.querySelector('.cb');
     const isDone = el.classList.contains('done');
     if (isDone) {
-      el.classList.remove('done');
-      cb.classList.remove('checked');
-      cb.innerHTML = '';
-      checkedCount--;
+      el.classList.remove('done'); cb.classList.remove('checked'); cb.innerHTML = ''; checkedCount--;
     } else {
-      el.classList.add('done');
-      cb.classList.add('checked');
-      cb.innerHTML = '<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#c0d8f0" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      el.classList.add('done'); cb.classList.add('checked');
+      cb.innerHTML = '<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>';
       checkedCount++;
-      el.style.transform = 'translateX(4px)';
-      setTimeout(() => el.style.transform = '', 200);
+      el.style.transform = 'translateX(3px)';
+      setTimeout(() => el.style.transform = '', 180);
     }
     updateProgress();
   }
@@ -536,17 +509,17 @@
     if (checkedCount === 5) {
       fill.style.background = 'var(--gold)';
       fill.classList.add('celebrate');
-      setTimeout(() => fill.classList.remove('celebrate'), 600);
+      setTimeout(() => fill.classList.remove('celebrate'), 500);
       label.textContent = 'All checks passed. Ready to submit.';
       label.style.color = 'var(--gold)';
       num.classList.add('done');
       btn.classList.remove('disabled');
       btn.classList.add('unlock-glow');
-      setTimeout(() => btn.classList.remove('unlock-glow'), 700);
+      setTimeout(() => btn.classList.remove('unlock-glow'), 650);
     } else {
       fill.style.background = 'var(--accent)';
       label.textContent = checkedCount + ' / 5 — complete checklist first';
-      label.style.color = '#c89010';
+      label.style.color = 'var(--text-tertiary)';
       num.classList.remove('done');
       btn.classList.add('disabled');
     }
@@ -562,7 +535,7 @@
     const warn = document.getElementById('cores-warn');
     warn.textContent = total !== 128
       ? 'You changed the core count to ' + total + '. Keep at 128 unless you know what you are doing. If unsure, ask Dohyun.'
-      : 'Keep cores at 128 unless you know what you are doing. If unsure, ask Dohyun.';
+      : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!";
     updatePBSPreview();
   }
 
@@ -586,8 +559,7 @@
 
   function updatePBSPreview() {
     const content = getPBSContent();
-    const el = document.getElementById('pbs-preview');
-    el.innerHTML = content
+    document.getElementById('pbs-preview').innerHTML = content
       .replace(/(#PBS)/g, '<span class="k">$1</span>')
       .replace(/\b(-l|-N|-np|-batch|-power|-podkey)\b/g, '<span class="k">$1</span>')
       .replace(/(module load|cd|starccm\+)/g, '<span class="v">$1</span>')
@@ -597,8 +569,7 @@
   function downloadPBS() {
     const blob = new Blob([getPBSContent()], {type: 'text/plain'});
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'run.pbs';
+    a.href = URL.createObjectURL(blob); a.download = 'run.pbs';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
 
@@ -612,8 +583,7 @@
 
   function showBanner(msg, type) {
     const el = document.getElementById('status-banner');
-    el.textContent = msg;
-    el.className = 'status-banner show ' + type;
+    el.textContent = msg; el.className = 'status-banner show ' + type;
   }
 
   function updateStatusUI(data) {
@@ -621,19 +591,16 @@
     const state = data.state || 'unknown';
     const badge = document.getElementById('status-badge');
     badge.className = 'state-badge state-' + (stateMap[state] ? state : 'unknown');
-    let badgeHTML = stateMap[state] || state;
-    if (state === 'R') badgeHTML = '<div class="pulse-dot blue"></div>' + badgeHTML;
-    if (state === 'Q') badgeHTML = '<div class="pulse-dot amber"></div>' + badgeHTML;
-    badge.innerHTML = badgeHTML;
+    let html = stateMap[state] || state;
+    if (state === 'R') html = '<div class="pulse-dot blue"></div>' + html;
+    if (state === 'Q') html = '<div class="pulse-dot amber"></div>' + html;
+    badge.innerHTML = html;
     const stateEl = document.getElementById('status-state');
     stateEl.textContent = stateMap[state] || state;
-    stateEl.style.color = state === 'R' ? '#4488cc' : state === 'C' ? 'var(--success)' : state === 'Q' ? '#c89010' : '#444';
+    stateEl.style.color = state === 'R' ? 'var(--accent-bright)' : state === 'C' ? 'var(--success)' : state === 'Q' ? '#c89010' : '#484f58';
     const out = document.getElementById('output-box');
     out.style.opacity = '0';
-    setTimeout(() => {
-      out.textContent = data.output || 'No output available.';
-      out.style.opacity = '1';
-    }, 150);
+    setTimeout(() => { out.textContent = data.output || 'No output available.'; out.style.opacity = '1'; }, 150);
     if (state === 'C') showBanner('Job complete. Transfer results via ssClient SFTP from ~/bfr/.', 'ok');
   }
 
@@ -645,27 +612,23 @@
     const simFile = document.getElementById('sim-file').files[0];
     if (!username || !password) { showBanner('Enter your Sabalcore username and password.', 'err'); return; }
     if (!simFile) { showBanner('Select a .sim file to upload.', 'err'); return; }
-
     btn.disabled = true;
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="8 4"><animateTransform attributeName="transform" type="rotate" from="0 7 7" to="360 7 7" dur="0.8s" repeatCount="indefinite"/></circle></svg> Uploading...';
     showBanner('Uploading ' + simFile.name + ' to Sabalcore...', 'warn');
-
-    const formData = new FormData();
-    formData.append('sim_file', simFile);
-    formData.append('username', username);
-    formData.append('password', password);
-    formData.append('job_name', document.getElementById('job-name').value.trim() || 'BFR_run');
-    formData.append('run_mode', document.getElementById('run-mode').value);
-    formData.append('nodes', document.getElementById('nodes').value);
-    formData.append('ppn', document.getElementById('ppn').value);
-
+    const fd = new FormData();
+    fd.append('sim_file', simFile);
+    fd.append('username', username);
+    fd.append('password', password);
+    fd.append('job_name', document.getElementById('job-name').value.trim() || 'BFR_run');
+    fd.append('run_mode', document.getElementById('run-mode').value);
+    fd.append('nodes', document.getElementById('nodes').value);
+    fd.append('ppn', document.getElementById('ppn').value);
     try {
-      const res = await fetch(BACKEND_URL + '/submit', { method: 'POST', body: formData });
+      const res = await fetch(BACKEND_URL + '/submit', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) { showBanner('Error: ' + (data.detail || 'Submission failed.'), 'err'); return; }
       currentJobId = data.job_id;
       currentCreds = { username, password };
-      currentSimFile = simFile.name;
       showBanner('Job submitted. ID: ' + currentJobId, 'ok');
       document.getElementById('status-card').classList.remove('hidden');
       document.getElementById('status-job-id').textContent = currentJobId;
@@ -682,22 +645,20 @@
   async function checkStatus() {
     if (!currentJobId || !currentCreds) return;
     const btn = document.getElementById('check-btn');
-    btn.textContent = 'Checking...';
-    btn.disabled = true;
-    const formData = new FormData();
-    formData.append('username', currentCreds.username);
-    formData.append('password', currentCreds.password);
-    formData.append('job_id', currentJobId);
+    btn.textContent = 'Checking...'; btn.disabled = true;
+    const fd = new FormData();
+    fd.append('username', currentCreds.username);
+    fd.append('password', currentCreds.password);
+    fd.append('job_id', currentJobId);
     try {
-      const res = await fetch(BACKEND_URL + '/status', { method: 'POST', body: formData });
+      const res = await fetch(BACKEND_URL + '/status', { method: 'POST', body: fd });
       const data = await res.json();
       if (res.ok) updateStatusUI(data);
       else showBanner('Status check failed: ' + (data.detail || 'Unknown error'), 'err');
     } catch(e) {
       showBanner('Could not reach backend. Check that SC1 is running.', 'err');
     } finally {
-      btn.textContent = 'Check status';
-      btn.disabled = false;
+      btn.textContent = 'Check status'; btn.disabled = false;
     }
   }
 
@@ -705,93 +666,67 @@
     if (!currentJobId || !currentCreds) return;
     if (!confirm('Kill job ' + currentJobId + '? This cannot be undone.')) return;
     const btn = document.getElementById('kill-btn');
-    btn.textContent = 'Killing...';
-    btn.disabled = true;
-    const formData = new FormData();
-    formData.append('username', currentCreds.username);
-    formData.append('password', currentCreds.password);
-    formData.append('job_id', currentJobId);
+    btn.textContent = 'Killing...'; btn.disabled = true;
+    const fd = new FormData();
+    fd.append('username', currentCreds.username);
+    fd.append('password', currentCreds.password);
+    fd.append('job_id', currentJobId);
     try {
-      const res = await fetch(BACKEND_URL + '/kill', { method: 'POST', body: formData });
+      const res = await fetch(BACKEND_URL + '/kill', { method: 'POST', body: fd });
       const data = await res.json();
       if (res.ok) {
         showBanner('Job ' + currentJobId + ' killed.', 'ok');
         document.getElementById('status-badge').className = 'state-badge state-unknown';
         document.getElementById('status-badge').textContent = 'Killed';
         document.getElementById('output-box').textContent = 'Job was killed.';
-      } else {
-        showBanner('Failed to kill: ' + (data.detail || 'Unknown error'), 'err');
-      }
-    } catch(e) {
-      showBanner('Could not reach backend.', 'err');
-    } finally {
-      btn.textContent = 'Kill job';
-      btn.disabled = false;
-    }
+      } else showBanner('Failed to kill: ' + (data.detail || 'Unknown error'), 'err');
+    } catch(e) { showBanner('Could not reach backend.', 'err'); }
+    finally { btn.textContent = 'Kill job'; btn.disabled = false; }
   }
 
   async function clearBfr() {
     if (!currentCreds) return;
     if (!confirm('Clear all files in ~/bfr/ on Sabalcore? Make sure you have already downloaded your results.')) return;
-    const formData = new FormData();
-    formData.append('username', currentCreds.username);
-    formData.append('password', currentCreds.password);
+    const fd = new FormData();
+    fd.append('username', currentCreds.username);
+    fd.append('password', currentCreds.password);
     try {
-      const res = await fetch(BACKEND_URL + '/clear', { method: 'POST', body: formData });
-      if (res.ok) {
-        showBanner('~/bfr/ cleared successfully.', 'ok');
-        document.getElementById('output-box').textContent = 'Cleared.';
-      }
-    } catch(e) {
-      showBanner('Clear failed. Check that SC1 is running.', 'err');
-    }
+      const res = await fetch(BACKEND_URL + '/clear', { method: 'POST', body: fd });
+      if (res.ok) { showBanner('~/bfr/ cleared successfully.', 'ok'); document.getElementById('output-box').textContent = 'Cleared.'; }
+    } catch(e) { showBanner('Clear failed. Check that SC1 is running.', 'err'); }
   }
 
   function rippleEl(btn) {
-    const r = document.createElement('div');
-    r.className = 'ripple';
+    const r = document.createElement('div'); r.className = 'ripple';
     r.style.cssText = 'width:80px;height:80px;left:calc(50% - 40px);top:calc(50% - 40px);';
-    btn.appendChild(r);
-    setTimeout(() => r.remove(), 500);
+    btn.appendChild(r); setTimeout(() => r.remove(), 450);
   }
 
   function copyCmd(btn, cmd) {
     navigator.clipboard.writeText(cmd).then(() => {
-      btn.textContent = 'copied!';
-      btn.classList.add('copied');
+      btn.textContent = 'copied!'; btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
     });
   }
 
+  // Particle background
   const canvas = document.getElementById('bgcanvas');
   const ctx = canvas.getContext('2d');
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = document.body.scrollHeight;
-  }
+  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = Math.max(document.body.scrollHeight, window.innerHeight); }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
-  const dots = Array.from({length: 160}, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 0.9 + 0.2,
-    a: Math.random() * Math.PI * 2,
-    s: (Math.random() - 0.5) * 0.12
+  const dots = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    r: Math.random() * 0.8 + 0.2, a: Math.random() * Math.PI * 2, s: (Math.random() - 0.5) * 0.1
   }));
   function drawDots() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     dots.forEach(d => {
-      d.a += d.s * 0.02;
-      d.x += Math.cos(d.a) * 0.07;
-      d.y += Math.sin(d.a) * 0.07;
-      if (d.x < 0) d.x = canvas.width;
-      if (d.x > canvas.width) d.x = 0;
-      if (d.y < 0) d.y = canvas.height;
-      if (d.y > canvas.height) d.y = 0;
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,85,179,0.3)';
-      ctx.fill();
+      d.a += d.s * 0.018; d.x += Math.cos(d.a) * 0.06; d.y += Math.sin(d.a) * 0.06;
+      if (d.x < 0) d.x = canvas.width; if (d.x > canvas.width) d.x = 0;
+      if (d.y < 0) d.y = canvas.height; if (d.y > canvas.height) d.y = 0;
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(31,111,235,0.25)'; ctx.fill();
     });
     requestAnimationFrame(drawDots);
   }
