@@ -78,7 +78,7 @@
     border-radius: var(--radius-lg); padding: 16px 18px;
     transition: border-color 0.2s;
   }
-  .card:hover { border-color: #30363d; }
+  .card:hover { border-color: #3a424d; }
 
   .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; }
   .section-num {
@@ -170,11 +170,11 @@
   .btn-primary { background: rgba(31,111,235,0.15); color: var(--accent-bright); border: 1px solid var(--accent-border); }
   .btn-primary:hover { background: rgba(31,111,235,0.25); border-color: var(--accent-bright); }
   .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: rgba(255,255,255,0.04); border-color: #30363d; color: var(--text); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.04); border-color: #3a424d; color: var(--text); }
   .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger-border); }
   .btn-danger:hover { background: var(--danger-dim); }
   .btn-warn { background: transparent; color: #8b949e; border: 1px solid var(--border); }
-  .btn-warn:hover { color: var(--text-secondary); border-color: #30363d; }
+  .btn-warn:hover { color: var(--text-secondary); border-color: #3a424d; }
 
   .submit-btn {
     width: 100%; height: 44px; background: var(--gold); border-radius: var(--radius-lg);
@@ -224,7 +224,8 @@
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--gold);
     border-radius: 0 var(--radius) var(--radius) 0;
     padding: 10px 12px; font-family: var(--mono); font-size: 11px; line-height: 1.8;
-    white-space: pre-wrap; min-height: 44px; margin-bottom: 10px;
+    white-space: pre-wrap; min-height: 44px; max-height: 320px;
+    overflow-y: auto; margin-bottom: 10px;
     color: #8b949e; transition: opacity 0.25s;
   }
 
@@ -283,12 +284,12 @@
       The Sabalcore terminal does not support Ctrl+V. Use <strong style="color:#7aa8d8;">Shift+Insert</strong> to paste in the terminal instead.
     </div>
 
-    <div class="status-banner" id="status-banner"></div>    <div class="status-banner" id="status-banner"></div>
+    <div class="status-banner" id="status-banner"></div>
 
     <div class="card">
       <div class="section-header">
         <div class="section-num" id="num1">1</div>
-        <span class="section-title">Pre-run checklist</span>
+        <span class="section-title">Pre-flight checklist</span>
       </div>
       <div class="checklist">
         <div class="check-item" onclick="toggleCheck(this)">
@@ -373,7 +374,7 @@
             <input type="range" min="1" max="16" value="4" id="nodes" step="1" oninput="updateCores()">
             <span style="font-size:12px;font-weight:600;color:#c9d1d9;min-width:20px;" id="nodes-val">4</span>
           </div>
-          <div class="cores-pill" id="cores-pill">128 total cores</div>
+          <div class="cores-pill" id="cores-pill">64 total cores</div>
           <div class="hint-warn" id="cores-warn" style="margin-top:6px;">Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!</div>
         </div>
       </div>
@@ -434,7 +435,7 @@
 
     <div class="card">
       <div class="section-header"><div class="section-num">1</div><span class="section-title">Transfer files to Sabalcore</span></div>
-      <p style="font-size:12px;color:#8b949e;line-height:1.7;">In ssClient go to <strong style="color:#8b949e;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#8b949e;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
+      <p style="font-size:12px;color:#8b949e;line-height:1.7;">In ssClient go to <strong style="color:#c9d1d9;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#c9d1d9;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
     </div>
 
     <div class="card">
@@ -534,8 +535,8 @@
     document.getElementById('cores-pill').textContent = total + ' total cores';
     const warn = document.getElementById('cores-warn');
     warn.textContent = total !== 64
-      ? 'You changed the core count to ' + total + '. Keep at 64 unless you know what you are doing. ASK ME IF YOU ARE NOT SURE!!"
-      : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU ARE NOT SURE!!";
+      ? 'You changed the core count to ' + total + '. Keep at 64 unless you know what you are doing. ASK ME IF YOU ARE NOT SURE!!'
+      : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!";
     updatePBSPreview();
   }
 
@@ -568,7 +569,7 @@
     const content = getPBSContent();
     document.getElementById('pbs-preview').innerHTML = content
       .replace(/(#PBS)/g, '<span class="k">$1</span>')
-      .replace(/(-l|-N|-np|-batch|-power|-podkey)/g, '<span class="k">$1</span>')
+      .replace(/(-l|-N|-np|-batch|-power|-podkey)/g, '<span class="k">$1</span>')
       .replace(/(module load|cd|starccm\+)/g, '<span class="v">$1</span>')
       .replace(/(starccm\/20\.04\.007|\$PBS_O_WORKDIR|\$PBS_NP)/g, '<span class="s">$1</span>');
   }
@@ -604,7 +605,6 @@
     const stateEl = document.getElementById('status-state');
     stateEl.textContent = stateMap[state] || state;
     stateEl.style.color = state === 'R' ? 'var(--accent-bright)' : state === 'C' ? 'var(--success)' : state === 'Q' ? '#c89010' : '#484f58';
-    if (walltime) document.getElementById('status-walltime') && (document.getElementById('status-walltime').textContent = walltime);
   }
 
   function startTailStream() {
@@ -619,7 +619,6 @@
     fd.append('password', currentCreds.password);
     fd.append('job_id', currentJobId);
 
-    // SSE via POST requires fetch + ReadableStream since EventSource only supports GET
     fetch(BACKEND_URL + '/tail', { method: 'POST', body: fd })
       .then(res => {
         const reader = res.body.getReader();
@@ -633,7 +632,7 @@
             const parts = buffer.split('\n\n');
             buffer = parts.pop();
             parts.forEach(part => {
-              if (!part.trim() || part.startsWith(': ')) return; // skip keepalives
+              if (!part.trim() || part.startsWith(': ')) return;
               const lines = part.split('\n');
               let eventType = 'message';
               let data = '';
@@ -658,7 +657,7 @@
         }
         read();
       })
-      .catch(e => showBanner('Could not start live output. Check that SC1 is running.', 'err'));
+      .catch(() => showBanner('Could not start live output. Check that SC1 is running.', 'err'));
   }
 
   async function submitJob() {
