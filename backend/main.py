@@ -17,7 +17,7 @@ SABALCORE_HOST = "login.sabalcore.com"
 SABALCORE_PORT = 22
 REMOTE_DIR = "~/bfr"
 STARCCM_MODULE = "starccm/20.04.007"
-POD_KEY = "YOUR_POD_KEY_HERE"
+POD_KEY = "F7/LkUXpj2wKzca9mMuVeA"
 
 
 def get_ssh_client(username: str, password: str) -> paramiko.SSHClient:
