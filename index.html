@@ -421,7 +421,6 @@
         <strong>To download results:</strong> open ssClient → Tools → SFTP File Transfers → navigate to <strong>~/bfr/</strong> on the right pane → transfer your completed .sim and output files to your PC.
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="checkStatus(); rippleEl(this)" id="check-btn">Check status</button>
         <button class="btn btn-danger" onclick="killJob(); rippleEl(this)" id="kill-btn">Kill job</button>
         <button class="btn btn-warn" onclick="clearBfr(); rippleEl(this)" id="clear-btn">Clear ~/bfr/</button>
       </div>
@@ -476,6 +475,7 @@
   let checkedCount = 0;
   let currentJobId = null;
   let currentCreds = null;
+  let eventSource = null;
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -554,14 +554,21 @@
     const runmode = document.getElementById('run-mode').value;
     const nodes = document.getElementById('nodes').value;
     const ppn = document.getElementById('ppn').value;
-    return `#PBS -l nodes=${nodes}:red:ppn=${ppn}\n#PBS -l nodes+=${nodes}:copper:ppn=${ppn}\n#PBS -l nodes++=${nodes}:blue:ppn=${ppn}\n#PBS -N ${jobname}\n\ncd $PBS_O_WORKDIR\n\nmodule load starccm/20.04.007\n\nstarccm+ -power -podkey [POD_KEY] -np $PBS_NP -batch ${runmode} ${simfile}`;
+    const nl = '\n';
+    return '#PBS -l nodes=' + nodes + ':red:ppn=' + ppn + nl +
+      '#PBS -l nodes+=' + nodes + ':copper:ppn=' + ppn + nl +
+      '#PBS -l nodes++=' + nodes + ':blue:ppn=' + ppn + nl +
+      '#PBS -N ' + jobname + nl + nl +
+      'cd $PBS_O_WORKDIR' + nl + nl +
+      'module load starccm/20.04.007' + nl + nl +
+      'starccm+ -power -podkey [POD_KEY] -np $PBS_NP -batch ' + runmode + ' ' + simfile;
   }
 
   function updatePBSPreview() {
     const content = getPBSContent();
     document.getElementById('pbs-preview').innerHTML = content
       .replace(/(#PBS)/g, '<span class="k">$1</span>')
-      .replace(/\b(-l|-N|-np|-batch|-power|-podkey)\b/g, '<span class="k">$1</span>')
+      .replace(/(-l|-N|-np|-batch|-power|-podkey)/g, '<span class="k">$1</span>')
       .replace(/(module load|cd|starccm\+)/g, '<span class="v">$1</span>')
       .replace(/(starccm\/20\.04\.007|\$PBS_O_WORKDIR|\$PBS_NP)/g, '<span class="s">$1</span>');
   }
@@ -586,9 +593,8 @@
     el.textContent = msg; el.className = 'status-banner show ' + type;
   }
 
-  function updateStatusUI(data) {
+  function updateStateBadge(state, walltime) {
     const stateMap = { Q: 'Queued', R: 'Running', C: 'Complete' };
-    const state = data.state || 'unknown';
     const badge = document.getElementById('status-badge');
     badge.className = 'state-badge state-' + (stateMap[state] ? state : 'unknown');
     let html = stateMap[state] || state;
@@ -598,10 +604,61 @@
     const stateEl = document.getElementById('status-state');
     stateEl.textContent = stateMap[state] || state;
     stateEl.style.color = state === 'R' ? 'var(--accent-bright)' : state === 'C' ? 'var(--success)' : state === 'Q' ? '#c89010' : '#484f58';
+    if (walltime) document.getElementById('status-walltime') && (document.getElementById('status-walltime').textContent = walltime);
+  }
+
+  function startTailStream() {
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    if (!currentJobId || !currentCreds) return;
+
     const out = document.getElementById('output-box');
-    out.style.opacity = '0';
-    setTimeout(() => { out.textContent = data.output || 'No output available.'; out.style.opacity = '1'; }, 150);
-    if (state === 'C') showBanner('Job complete. Transfer results via ssClient SFTP from ~/bfr/.', 'ok');
+    out.textContent = '';
+
+    const fd = new FormData();
+    fd.append('username', currentCreds.username);
+    fd.append('password', currentCreds.password);
+    fd.append('job_id', currentJobId);
+
+    // SSE via POST requires fetch + ReadableStream since EventSource only supports GET
+    fetch(BACKEND_URL + '/tail', { method: 'POST', body: fd })
+      .then(res => {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        function read() {
+          reader.read().then(({ done, value }) => {
+            if (done) return;
+            buffer += decoder.decode(value, { stream: true });
+            const parts = buffer.split('\n\n');
+            buffer = parts.pop();
+            parts.forEach(part => {
+              if (!part.trim() || part.startsWith(': ')) return; // skip keepalives
+              const lines = part.split('\n');
+              let eventType = 'message';
+              let data = '';
+              lines.forEach(line => {
+                if (line.startsWith('event: ')) eventType = line.slice(7).trim();
+                if (line.startsWith('data: ')) data = line.slice(6);
+              });
+              if (eventType === 'state') {
+                const [state, walltime] = data.split('|');
+                updateStateBadge(state, walltime);
+              } else if (eventType === 'done') {
+                showBanner('Job complete. Transfer results via ssClient SFTP from ~/bfr/.', 'ok');
+              } else if (eventType === 'error') {
+                showBanner('Stream error: ' + data, 'err');
+              } else if (data) {
+                out.textContent += data + '\n';
+                out.scrollTop = out.scrollHeight;
+              }
+            });
+            read();
+          });
+        }
+        read();
+      })
+      .catch(e => showBanner('Could not start live output. Check that SC1 is running.', 'err'));
   }
 
   async function submitJob() {
@@ -629,36 +686,17 @@
       if (!res.ok) { showBanner('Error: ' + (data.detail || 'Submission failed.'), 'err'); return; }
       currentJobId = data.job_id;
       currentCreds = { username, password };
-      showBanner('Job submitted. ID: ' + currentJobId, 'ok');
+      showBanner('Job submitted. ID: ' + currentJobId + '. Live output starting...', 'ok');
       document.getElementById('status-card').classList.remove('hidden');
       document.getElementById('status-job-id').textContent = currentJobId;
       document.getElementById('status-simfile').textContent = simFile.name;
-      document.getElementById('output-box').textContent = 'Job submitted. Click Check status to see progress.';
+      document.getElementById('output-box').textContent = 'Connecting to live output...';
+      startTailStream();
     } catch(e) {
       showBanner('Could not reach backend. Check that SC1 is running and ngrok is active.', 'err');
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M7 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Submit job to Sabalcore';
-    }
-  }
-
-  async function checkStatus() {
-    if (!currentJobId || !currentCreds) return;
-    const btn = document.getElementById('check-btn');
-    btn.textContent = 'Checking...'; btn.disabled = true;
-    const fd = new FormData();
-    fd.append('username', currentCreds.username);
-    fd.append('password', currentCreds.password);
-    fd.append('job_id', currentJobId);
-    try {
-      const res = await fetch(BACKEND_URL + '/status', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (res.ok) updateStatusUI(data);
-      else showBanner('Status check failed: ' + (data.detail || 'Unknown error'), 'err');
-    } catch(e) {
-      showBanner('Could not reach backend. Check that SC1 is running.', 'err');
-    } finally {
-      btn.textContent = 'Check status'; btn.disabled = false;
     }
   }
 
@@ -675,6 +713,7 @@
       const res = await fetch(BACKEND_URL + '/kill', { method: 'POST', body: fd });
       const data = await res.json();
       if (res.ok) {
+        if (eventSource) { eventSource.close(); eventSource = null; }
         showBanner('Job ' + currentJobId + ' killed.', 'ok');
         document.getElementById('status-badge').className = 'state-badge state-unknown';
         document.getElementById('status-badge').textContent = 'Killed';
@@ -709,7 +748,6 @@
     });
   }
 
-  // Particle background
   const canvas = document.getElementById('bgcanvas');
   const ctx = canvas.getContext('2d');
   function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = Math.max(document.body.scrollHeight, window.innerHeight); }
