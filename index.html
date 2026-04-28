@@ -547,6 +547,7 @@
       <div class="btn-row">
         <button class="btn" onclick="stopPolling()">Stop monitoring</button>
         <button class="btn btn-primary" onclick="startPolling()">Refresh now</button>
+        <button class="btn" id="kill-btn" onclick="killJob()" style="border-color:var(--danger-border);color:var(--danger);">Kill job</button>
       </div>
     </div>
 
@@ -639,7 +640,7 @@
 </div>
 
 <script>
-  const BACKEND_URL = 'https://bfr-sabalcore-1.onrender.com';
+  const BACKEND_URL = 'https://bfr-sabalcore-backend.onrender.com';
   const checks = ['ci-mesh','ci-iter','ci-stop','ci-reports','ci-save'];
   let pollInterval = null;
   let currentJobId = null;
@@ -792,6 +793,35 @@
       }
     } catch(e) {
       console.error('Status fetch failed', e);
+    }
+  }
+
+  async function killJob() {
+    if (!currentJobId || !currentCreds) return;
+    if (!confirm('Kill job ' + currentJobId + '? This cannot be undone.')) return;
+    const btn = document.getElementById('kill-btn');
+    btn.textContent = 'Killing...';
+    btn.disabled = true;
+    const formData = new FormData();
+    formData.append('username', currentCreds.username);
+    formData.append('password', currentCreds.password);
+    formData.append('job_id', currentJobId);
+    try {
+      const res = await fetch(BACKEND_URL + '/kill', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok) {
+        stopPolling();
+        setStatus('Job ' + currentJobId + ' killed successfully.', 'ok');
+        document.getElementById('status-badge').textContent = 'Killed';
+        document.getElementById('status-badge').className = 'state-badge state-unknown';
+      } else {
+        setStatus('Failed to kill job: ' + (data.detail || 'Unknown error'), 'error');
+      }
+    } catch(e) {
+      setStatus('Could not reach backend to kill job.', 'error');
+    } finally {
+      btn.textContent = 'Kill job';
+      btn.disabled = false;
     }
   }
 

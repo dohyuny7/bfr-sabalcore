@@ -17,7 +17,7 @@ SABALCORE_HOST = "login.sabalcore.com"
 SABALCORE_PORT = 22
 REMOTE_DIR = "~/bfr"
 STARCCM_MODULE = "starccm/20.04.007"
-POD_KEY = "F7/LkUXpj2wKzca9mMuVeA"
+POD_KEY = "YOUR_POD_KEY_HERE"
 
 
 def get_ssh_client(username: str, password: str) -> paramiko.SSHClient:
@@ -153,6 +153,28 @@ async def job_status(
             "output_tail": tail_out
         })
 
+    finally:
+        client.close()
+
+
+@app.post("/kill")
+async def kill_job(
+    username: str = Form(...),
+    password: str = Form(...),
+    job_id: str = Form(...),
+):
+    try:
+        client = get_ssh_client(username, password)
+    except paramiko.AuthenticationException:
+        raise HTTPException(status_code=401, detail="Invalid credentials.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        stdout, stderr = run_command(client, f"qdel {job_id}")
+        return JSONResponse({"killed": True, "job_id": job_id})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to kill job: {str(e)}")
     finally:
         client.close()
 
