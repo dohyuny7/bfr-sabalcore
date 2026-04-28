@@ -467,6 +467,26 @@
       <div class="manual-cmd" style="margin-top:6px;"><span>rm -f ~/bfr/*</span><button class="copy-btn" onclick="copyCmd(this,'rm -f ~/bfr/*')">copy</button></div>
     </div>
 
+    <div class="card">
+      <div class="section-header"><div class="section-num">6</div><span class="section-title">Credit & usage</span></div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Check your allocation balance and job history.</p>
+      <div class="manual-cmd"><span>mybalance</span><button class="copy-btn" onclick="copyCmd(this,'mybalance')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>myusage</span><button class="copy-btn" onclick="copyCmd(this,'myusage')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>myusage --summary</span><button class="copy-btn" onclick="copyCmd(this,'myusage --summary')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>myusage --storage</span><button class="copy-btn" onclick="copyCmd(this,'myusage --storage')">copy</button></div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-top:8px;"><code>mybalance</code> shows core-hour balance. <code>myusage --summary</code> shows last 12 months. <code>myusage --storage</code> shows disk usage.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-num">7</div><span class="section-title">Inspect a job</span></div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Full job details including node allocation, state, and resource usage.</p>
+      <div class="manual-cmd"><span>qstat -f JOBID.jman</span><button class="copy-btn" onclick="copyCmd(this,'qstat -f JOBID.jman')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>qstat</span><button class="copy-btn" onclick="copyCmd(this,'qstat')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>ls -la ~/bfr/</span><button class="copy-btn" onclick="copyCmd(this,'ls -la ~/bfr/')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>cat ~/bfr/BFR_run.eJOBID</span><button class="copy-btn" onclick="copyCmd(this,'cat ~/bfr/BFR_run.eJOBID')">copy</button></div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-top:8px;">The <code>.e</code> file contains stderr — check it first if a job exits unexpectedly. Replace JOBID with your actual job number.</p>
+    </div>
+
   </div>
 
 </div>
