@@ -549,6 +549,10 @@
     }
   }
 
+  // FIX: single #PBS -l nodes= line — the nodes++/nodes+ notation allocates
+  // ALL three partitions simultaneously (not fallback/priority order), which
+  // triples the requested core count. A single line lets Sabalcore assign nodes
+  // from whichever partitions are available without multiplying allocation.
   function getPBSContent() {
     const simfile = (document.getElementById('sim-file').files[0] || {name: 'YOURFILE.sim'}).name;
     const jobname = document.getElementById('job-name').value.trim() || 'BFR_run';
@@ -556,9 +560,7 @@
     const nodes = document.getElementById('nodes').value;
     const ppn = document.getElementById('ppn').value;
     const nl = '\n';
-    return '#PBS -l nodes=' + nodes + ':red:ppn=' + ppn + nl +
-      '#PBS -l nodes+=' + nodes + ':copper:ppn=' + ppn + nl +
-      '#PBS -l nodes++=' + nodes + ':blue:ppn=' + ppn + nl +
+    return '#PBS -l nodes=' + nodes + ':ppn=' + ppn + nl +
       '#PBS -N ' + jobname + nl + nl +
       'cd $PBS_O_WORKDIR' + nl + nl +
       'module load starccm/20.04.007' + nl + nl +
