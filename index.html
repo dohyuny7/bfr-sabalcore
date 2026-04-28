@@ -343,14 +343,14 @@
 
   <div>
     <div class="page-title">PBS job configurator</div>
-    <div class="page-sub">Fill out the form, complete the pre-flight checklist, then download your <code>run.pbs</code> file.</div>
+    <div class="page-sub">Fill out the form, complete the pre-run checklist, then download your <code>run.pbs</code> file.</div>
     <div class="notice-banner">
       <strong>Heads up:</strong> The Sabalcore terminal does not support copy and paste. Every command on this page has a copy button next to it. Once you are in the terminal, you need to type commands manually or use <strong>Shift + Insert</strong> to paste instead of Ctrl+V.
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Pre-flight checklist</div>
+    <div class="card-title">Pre-run checklist</div>
     <div class="checklist">
       <label class="check-item" id="ci-mesh" onclick="toggleCheck('ci-mesh','cb-mesh')">
         <input type="checkbox" id="cb-mesh" onclick="event.stopPropagation();toggleCheck('ci-mesh','cb-mesh')">
@@ -370,14 +370,14 @@
         <input type="checkbox" id="cb-stop" onclick="event.stopPropagation();toggleCheck('ci-stop','cb-stop')">
         <div>
           <div class="check-label">Convergence stopping criterion enabled</div>
-          <div class="check-sub">Stopping Criteria → confirm the drag convergence criterion is active, not just defined. Easy to accidentally leave disabled.</div>
+          <div class="check-sub">Stopping Criteria → confirm at least one force monitor criterion is active. This lets us terminate the sim early if the reports converge.</div>
         </div>
       </label>
       <label class="check-item" id="ci-reports" onclick="toggleCheck('ci-reports','cb-reports')">
         <input type="checkbox" id="cb-reports" onclick="event.stopPropagation();toggleCheck('ci-reports','cb-reports')">
         <div>
           <div class="check-label">Force reports configured correctly</div>
-          <div class="check-sub">Drag, downforce, and moment reports set to correct reference area, direction, and coordinate system.</div>
+          <div class="check-sub">All reports set to correct reference area, direction, and coordinate system.</div>
         </div>
       </label>
       <label class="check-item" id="ci-save" onclick="toggleCheck('ci-save','cb-save')">
