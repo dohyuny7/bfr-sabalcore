@@ -13,18 +13,18 @@
     --bg: #0d1117;
     --bg-card: #161b22;
     --bg-input: #0d1117;
-    --border: #21262d;
+    --border: #30363d;
     --border-lit: #1f6feb;
     --text: #f0f6fc;
-    --text-secondary: #8b949e;
-    --text-tertiary: #484f58;
+    --text-secondary: #c9d1d9;
+    --text-tertiary: #8b949e;
     --accent: #1f6feb;
     --accent-bright: #58a6ff;
-    --accent-dim: rgba(31,111,235,0.1);
-    --accent-border: rgba(31,111,235,0.3);
+    --accent-dim: rgba(31,111,235,0.15);
+    --accent-border: rgba(31,111,235,0.4);
     --gold: #FDB515;
-    --gold-dim: rgba(253,181,21,0.07);
-    --gold-border: rgba(253,181,21,0.22);
+    --gold-dim: rgba(253,181,21,0.08);
+    --gold-border: rgba(253,181,21,0.35);
     --success: #3fb950;
     --success-dim: rgba(63,185,80,0.1);
     --success-border: rgba(63,185,80,0.3);
@@ -51,7 +51,7 @@
   }
 
   .brand-title { font-size: 14px; font-weight: 600; color: var(--text); }
-  .brand-sub { font-size: 11px; color: var(--text-tertiary); }
+  .brand-sub { font-size: 11px; color: #6e7681; }
 
   .tabs {
     display: flex; background: var(--bg);
@@ -70,7 +70,7 @@
   .notice {
     background: rgba(31,111,235,0.06); border: 1px solid var(--accent-border);
     border-radius: var(--radius); padding: 9px 13px;
-    font-size: 11.5px; color: #4c82c5; line-height: 1.6;
+    font-size: 11.5px; color: #6a9fd8; line-height: 1.6;
   }
 
   .card {
@@ -88,7 +88,7 @@
     transition: all 0.35s;
   }
   .section-num.done { background: var(--gold); color: #0d1117; transform: scale(1.12); }
-  .section-title { font-size: 12px; font-weight: 600; color: #c9d1d9; letter-spacing: 0.01em; }
+  .section-title { font-size: 12px; font-weight: 600; color: #e6edf3; letter-spacing: 0.01em; }
 
   .checklist { display: flex; flex-direction: column; gap: 4px; }
   .check-item {
@@ -118,7 +118,7 @@
 
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .field label { font-size: 11px; font-weight: 500; color: #8b949e; text-transform: uppercase; letter-spacing: 0.06em; }
 
   input[type=text], input[type=password], input[type=file], select {
     width: 100%; height: 34px; padding: 0 10px;
@@ -142,7 +142,7 @@
   select option { background: #161b22; }
 
   .hint { font-size: 10px; color: var(--text-tertiary); }
-  .hint-warn { font-size: 11px; color: #9a7020; background: rgba(253,181,21,0.05); border: 1px solid var(--gold-border); border-radius: var(--radius); padding: 5px 9px; line-height: 1.5; }
+  .hint-warn { font-size: 11px; color: #c89820; background: rgba(253,181,21,0.07); border: 1px solid var(--gold-border); border-radius: var(--radius); padding: 5px 9px; line-height: 1.5; }
 
   .slider-row { display: flex; align-items: center; gap: 10px; }
   input[type=range] { flex: 1; accent-color: var(--accent-bright); cursor: pointer; }
@@ -152,7 +152,7 @@
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent);
     border-radius: var(--radius); padding: 12px 14px;
     font-family: var(--mono); font-size: 11px; line-height: 1.9;
-    white-space: pre; overflow-x: auto; color: #8b949e;
+    white-space: pre; overflow-x: auto; color: #adbac7;
   }
   .pbs-preview .k { color: var(--accent-bright); }
   .pbs-preview .v { color: #7ee787; }
@@ -173,7 +173,7 @@
   .btn-ghost:hover { background: rgba(255,255,255,0.04); border-color: #30363d; color: var(--text); }
   .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger-border); }
   .btn-danger:hover { background: var(--danger-dim); }
-  .btn-warn { background: transparent; color: #6e7681; border: 1px solid var(--border); }
+  .btn-warn { background: transparent; color: #8b949e; border: 1px solid var(--border); }
   .btn-warn:hover { color: var(--text-secondary); border-color: #30363d; }
 
   .submit-btn {
@@ -194,7 +194,7 @@
   .divider-label {
     position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
     background: var(--bg); padding: 0 10px;
-    font-size: 10px; color: var(--text-tertiary); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+    font-size: 10px; color: #8b949e; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
   }
 
   .status-banner { padding: 9px 14px; border-radius: var(--radius); font-size: 12px; font-weight: 500; display: none; }
@@ -217,22 +217,21 @@
 
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
   .stat-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 11px; }
-  .stat-label { font-size: 9px; color: var(--text-tertiary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+  .stat-label { font-size: 9px; color: #8b949e; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
   .stat-value { font-size: 14px; font-weight: 600; color: #e6edf3; }
 
   .output-box {
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--gold);
     border-radius: 0 var(--radius) var(--radius) 0;
-    padding: 10px 13px; font-family: var(--mono); font-size: 11px; line-height: 1.8;
-    white-space: pre-wrap; min-height: 44px; max-height: 320px;
-    overflow-y: auto; margin-bottom: 12px;
-    color: #484f58; transition: opacity 0.25s;
+    padding: 10px 12px; font-family: var(--mono); font-size: 11px; line-height: 1.8;
+    white-space: pre-wrap; min-height: 44px; margin-bottom: 10px;
+    color: #8b949e; transition: opacity 0.25s;
   }
 
   .sftp-block {
     background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent);
     border-radius: 0 var(--radius) var(--radius) 0;
-    padding: 9px 12px; font-size: 11.5px; color: #4c6a8a; line-height: 1.7; margin-bottom: 10px;
+    padding: 9px 12px; font-size: 11.5px; color: #6e8aaa; line-height: 1.7; margin-bottom: 10px;
   }
   .sftp-block strong { color: var(--text-secondary); font-weight: 500; }
 
@@ -435,7 +434,7 @@
 
     <div class="card">
       <div class="section-header"><div class="section-num">1</div><span class="section-title">Transfer files to Sabalcore</span></div>
-      <p style="font-size:12px;color:#4c6a8a;line-height:1.7;">In ssClient go to <strong style="color:#8b949e;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#8b949e;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
+      <p style="font-size:12px;color:#8b949e;line-height:1.7;">In ssClient go to <strong style="color:#8b949e;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#8b949e;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
     </div>
 
     <div class="card">
@@ -449,9 +448,9 @@
     <div class="card">
       <div class="section-header"><div class="section-num">3</div><span class="section-title">Job states</span></div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-Q" style="min-width:50px;justify-content:center;">Q</span><span style="font-size:12px;color:#4c6a8a;">Queued — waiting for nodes. No credits charged.</span></div>
-        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-R" style="min-width:50px;justify-content:center;">R</span><span style="font-size:12px;color:#4c6a8a;">Running — credits are being consumed.</span></div>
-        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-C" style="min-width:50px;justify-content:center;">C</span><span style="font-size:12px;color:#4c6a8a;">Complete — transfer results via SFTP from ~/bfr/.</span></div>
+        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-Q" style="min-width:50px;justify-content:center;">Q</span><span style="font-size:12px;color:#8b949e;">Queued — waiting for nodes. No credits charged.</span></div>
+        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-R" style="min-width:50px;justify-content:center;">R</span><span style="font-size:12px;color:#8b949e;">Running — credits are being consumed.</span></div>
+        <div style="display:flex;align-items:center;gap:12px;"><span class="state-badge state-C" style="min-width:50px;justify-content:center;">C</span><span style="font-size:12px;color:#8b949e;">Complete — transfer results via SFTP from ~/bfr/.</span></div>
       </div>
     </div>
 
