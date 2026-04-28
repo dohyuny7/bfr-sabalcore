@@ -722,13 +722,12 @@
     const btn = document.querySelector('[onclick="checkStatus()"]');
     btn.textContent = 'Checking...';
     btn.disabled = true;
+    const formData = new FormData();
+    formData.append('username', currentCreds.username);
+    formData.append('password', currentCreds.password);
+    formData.append('job_id', currentJobId);
     try {
-      const params = new URLSearchParams({
-        username: currentCreds.username,
-        password: currentCreds.password,
-        job_id: currentJobId
-      });
-      const res = await fetch(BACKEND_URL + '/status?' + params);
+      const res = await fetch(BACKEND_URL + '/status', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok) updateStatusUI(data);
       else setStatus('Status check failed: ' + (data.detail || 'Unknown error'), 'error');
@@ -824,13 +823,12 @@
     const btn = document.getElementById('download-btn');
     btn.textContent = 'Downloading...';
     btn.disabled = true;
+    const dlForm = new FormData();
+    dlForm.append('username', currentCreds.username);
+    dlForm.append('password', currentCreds.password);
+    dlForm.append('job_id', currentJobId);
     try {
-      const params = new URLSearchParams({
-        username: currentCreds.username,
-        password: currentCreds.password,
-        job_id: currentJobId
-      });
-      const res = await fetch(BACKEND_URL + '/download?' + params);
+      const res = await fetch(BACKEND_URL + '/download', { method: 'POST', body: dlForm });
       if (!res.ok) {
         const data = await res.json();
         setStatus('Download failed: ' + (data.detail || 'Unknown error'), 'error');
