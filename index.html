@@ -4,470 +4,337 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BFR Sabalcore Job Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #f0f4f8;
-    --bg-card: #ffffff;
-    --bg-input: #f4f7fa;
-    --bg-hover: #e8edf2;
-    --border: rgba(30,80,140,0.10);
-    --border-strong: rgba(30,80,140,0.22);
-    --text: #1a2a3a;
-    --text-secondary: #4a6080;
-    --text-tertiary: #8aaac8;
-    --accent: #1e6eb5;
-    --accent-dim: rgba(30,110,181,0.10);
-    --accent-border: rgba(30,110,181,0.28);
-    --success: #1a9e5c;
-    --success-dim: rgba(26,158,92,0.10);
-    --success-border: rgba(26,158,92,0.28);
-    --warn: #b07d10;
-    --warn-dim: rgba(176,125,16,0.09);
-    --warn-border: rgba(176,125,16,0.28);
-    --danger: #c0392b;
-    --danger-dim: rgba(192,57,43,0.09);
-    --danger-border: rgba(192,57,43,0.28);
-    --mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --bg: #0a0c10;
+    --bg-card: rgba(13,17,23,0.85);
+    --bg-input: #060810;
+    --bg-input-lit: #080e18;
+    --border: #1c2030;
+    --border-lit: #0a3060;
+    --text: #f0f0f0;
+    --text-secondary: #8aaac8;
+    --text-tertiary: #3a5070;
+    --accent: #0055b3;
+    --accent-dim: rgba(0,85,179,0.1);
+    --accent-border: rgba(0,85,179,0.25);
+    --gold: #FDB515;
+    --gold-dim: rgba(253,181,21,0.08);
+    --gold-border: rgba(253,181,21,0.22);
+    --success: #40a870;
+    --success-dim: rgba(50,180,100,0.08);
+    --success-border: rgba(50,180,100,0.25);
+    --danger: #c05050;
+    --danger-dim: rgba(180,50,50,0.08);
+    --danger-border: rgba(160,50,50,0.25);
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
     --radius: 8px;
-    --radius-lg: 12px;
+    --radius-lg: 10px;
   }
 
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  html, body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
 
-  html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
-  body { min-height: 100vh; }
+  canvas#bgcanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 
   .topbar {
-    border-bottom: 1px solid var(--border-strong);
-    padding: 0 2rem;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: rgba(240,244,248,0.95);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,12,16,0.92);
     backdrop-filter: blur(12px);
-    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
   }
 
-  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
 
-  .logo {
-    width: 28px; height: 28px;
-    background: var(--accent);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600; color: white; letter-spacing: 0.02em;
+  .emblem {
+    width: 34px; height: 34px; background: var(--gold);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #0a0c10;
+    transition: transform 0.2s; cursor: default; flex-shrink: 0;
   }
+  .emblem:hover { transform: rotate(-5deg) scale(1.08); }
 
-  .topbar-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .brand-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .brand-sub { font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.04em; }
 
-  .tab-bar {
-    display: flex; gap: 4px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    padding: 3px;
+  .tabs {
+    display: flex; background: #0d1117;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
   }
+  .tab { padding: 6px 16px; font-size: 12px; font-weight: 500; color: var(--text-tertiary); cursor: pointer; transition: all 0.2s; user-select: none; }
+  .tab.active { background: #003B7A; color: #c0d8f0; }
+  .tab:hover:not(.active) { color: var(--text-secondary); background: rgba(0,60,120,0.08); }
+  .tab-sep { width: 1px; background: var(--border); }
 
-  .tab {
-    padding: 5px 14px;
-    font-size: 12px; font-weight: 500;
-    border-radius: 6px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    border: none; background: transparent;
-    font-family: var(--sans);
-    transition: all 0.15s;
-  }
+  .main { max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
 
-  .tab.active {
-    background: var(--bg-card);
-    color: var(--text);
-    box-shadow: 0 1px 3px rgba(30,80,140,0.10);
-  }
+  .view { display: flex; flex-direction: column; gap: 12px; }
+  .view.hidden { display: none; }
 
-  .tab:hover:not(.active) { color: var(--text); }
-
-  .main {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 2.5rem 2rem 4rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .view { display: none; }
-  .view.active { display: contents; }
-
-  .page-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .page-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 0.75rem; }
-
-  .notice-banner {
-    background: var(--accent-dim);
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    font-size: 12.5px;
-    color: var(--accent);
-    line-height: 1.6;
-    margin-bottom: 1.25rem;
+  .notice {
+    background: #0d1520; border-left: 3px solid var(--accent);
+    border-radius: 0 7px 7px 0; padding: 9px 13px;
+    font-size: 11.5px; color: #5580aa; line-height: 1.6;
   }
 
   .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: 0 1px 4px rgba(30,80,140,0.06);
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 18px;
+    backdrop-filter: blur(4px); transition: border-color 0.3s;
   }
+  .card:hover { border-color: #1e3050; }
+  .card.complete { border-color: #0a3860; box-shadow: 0 0 0 1px rgba(0,85,179,0.12); }
 
-  .card-title {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-tertiary);
-    margin-bottom: 1.25rem;
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .section-num {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #c0d8f0; flex-shrink: 0;
+    transition: all 0.4s;
   }
+  .section-num.done { background: var(--gold); color: #0a0c10; transform: scale(1.15); }
+  .section-title { font-size: 12px; font-weight: 600; color: #c0c8d8; letter-spacing: 0.02em; }
 
-  .field { margin-bottom: 1rem; }
-  .field:last-child { margin-bottom: 0; }
-
-  .field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
+  .checklist { display: flex; flex-direction: column; gap: 5px; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 11px; border-radius: 7px;
+    cursor: pointer; transition: all 0.25s; user-select: none;
+    background: var(--gold-dim); border: 1px solid var(--gold-border);
   }
-
-  .field input, .field select {
-    width: 100%;
-    height: 38px;
-    padding: 0 12px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-size: 13px;
-    font-family: var(--sans);
-    transition: border-color 0.15s;
-    appearance: none;
-    -webkit-appearance: none;
+  .check-item.done { background: var(--accent-dim); border-color: var(--accent-border); }
+  .check-item:hover { transform: translateX(2px); }
+  .cb {
+    width: 15px; height: 15px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    border: 1.5px solid rgba(253,181,21,0.45); background: transparent;
   }
+  .cb.checked { background: var(--accent); border-color: #0066cc; }
+  .check-label { font-size: 12px; font-weight: 500; color: #dde4ee; transition: color 0.2s; }
+  .check-item.done .check-label { color: #8ab0d8; }
+  .check-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
 
-  .field input[type=file] {
-    height: auto;
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-
-  .field input:focus, .field select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-dim);
-  }
-
-  .field input::placeholder { color: var(--text-tertiary); }
-
-  .field select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 32px;
-    background-color: var(--bg-input);
-  }
-
-  .field select option { background: #fff; color: var(--text); }
-
-  .hint { font-size: 11px; color: var(--text-tertiary); margin-top: 5px; }
-  .hint-warn { font-size: 11px; color: var(--warn); margin-top: 5px; font-weight: 500; }
-  .hint-strong {
-    font-size: 11.5px; color: var(--accent); margin-top: 6px; font-weight: 500;
-    background: var(--accent-dim); border: 1px solid var(--accent-border);
-    border-radius: 6px; padding: 6px 10px; line-height: 1.5;
-  }
+  .progress-row { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
+  .prog-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 2px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1), background 0.4s; }
+  .prog-fill.celebrate { animation: celebrate 0.6s ease; }
+  @keyframes celebrate { 0%,100% { transform: scaleX(1); } 40% { transform: scaleX(1.02); } 70% { transform: scaleX(0.99); } }
+  .prog-label { font-size: 11px; font-weight: 600; color: #c89010; min-width: 170px; text-align: right; transition: color 0.3s; }
 
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
 
-  .slider-row { display: flex; align-items: center; gap: 12px; }
-  .slider-row input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; }
-  .slider-val { font-size: 13px; font-weight: 500; color: var(--text); min-width: 28px; text-align: right; }
-
-  .cores-badge {
-    display: inline-flex; align-items: center;
-    font-size: 12px; color: var(--accent);
-    background: var(--accent-dim);
-    border: 1px solid var(--accent-border);
-    border-radius: 20px;
-    padding: 3px 10px;
-    margin-top: 8px;
-    font-weight: 500;
+  input[type=text], input[type=password], input[type=file], select {
+    width: 100%; height: 36px; padding: 0 12px;
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-size: 12px; font-family: var(--sans);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none; -webkit-appearance: none;
   }
-
-  .checklist { display: flex; flex-direction: column; gap: 6px; }
-
-  .check-item {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px 14px;
-    background: var(--warn-dim);
-    border: 1px solid var(--warn-border);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: all 0.15s;
+  input[type=text]:focus, input[type=password]:focus, select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,85,179,0.15);
   }
-
-  .check-item.done { background: var(--success-dim); border-color: var(--success-border); }
-  .check-item input[type=checkbox] { margin-top: 2px; accent-color: var(--success); flex-shrink: 0; cursor: pointer; }
-  .check-label { font-size: 13px; font-weight: 500; color: var(--text); }
-  .check-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
-
-  .checklist-banner {
-    margin-top: 12px; padding: 10px 14px;
-    border-radius: var(--radius); font-size: 13px; font-weight: 500;
+  input[type=file] { height: auto; padding: 8px 12px; cursor: pointer; color: var(--text-secondary); }
+  input::placeholder { color: var(--text-tertiary); }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233a5070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+    background-color: var(--bg-input);
   }
+  select option { background: #0d1117; }
 
-  .banner-warn { background: var(--warn-dim); border: 1px solid var(--warn-border); color: var(--warn); }
-  .banner-ok { background: var(--success-dim); border: 1px solid var(--success-border); color: var(--success); }
-  .banner-err { background: var(--danger-dim); border: 1px solid var(--danger-border); color: var(--danger); }
+  .hint { font-size: 10px; color: var(--text-tertiary); }
+  .hint-warn { font-size: 11px; color: #8a6010; background: #0f0c00; border: 1px solid var(--gold-border); border-radius: 6px; padding: 5px 9px; line-height: 1.5; }
+  .hint-blue { font-size: 11px; color: #3a6aaa; background: var(--bg-input-lit); border: 1px solid var(--border-lit); border-radius: 6px; padding: 5px 9px; line-height: 1.5; }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  input[type=range] { flex: 1; accent-color: var(--gold); cursor: pointer; height: 3px; }
+  .cores-pill { display: inline-flex; font-size: 11px; color: #4478bb; background: var(--bg-input-lit); border: 1px solid var(--border-lit); border-radius: 20px; padding: 2px 10px; margin-top: 4px; font-weight: 500; }
+
+  .pbs-preview {
+    background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent);
+    border-radius: var(--radius); padding: 13px 15px;
+    font-family: var(--mono); font-size: 11px; line-height: 1.9;
+    white-space: pre; overflow-x: auto;
+  }
+  .pbs-preview .k { color: #5599dd; }
+  .pbs-preview .v { color: #4aaa7a; }
+  .pbs-preview .s { color: var(--gold); }
+  .pbs-preview .d { color: #2a3848; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    height: 34px; padding: 0 16px; border-radius: var(--radius);
+    font-size: 12px; font-weight: 500; font-family: var(--sans);
+    cursor: pointer; transition: all 0.18s; user-select: none;
+    display: flex; align-items: center; gap: 7px;
+    position: relative; overflow: hidden;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: #003B7A; color: #c8dff0; border: 1px solid var(--accent); }
+  .btn-primary:hover { background: #004d9e; border-color: #0066cc; }
+  .btn-ghost { background: transparent; color: #5a7090; border: 1px solid var(--border); }
+  .btn-ghost:hover { background: #0d1117; color: var(--text-secondary); border-color: #2a3848; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger-border); }
+  .btn-danger:hover { background: var(--danger-dim); border-color: rgba(180,60,60,0.4); }
+  .btn-warn { background: transparent; color: #666; border: 1px solid var(--border); }
+  .btn-warn:hover { color: #888; border-color: #2a3848; }
 
   .submit-btn {
-    width: 100%; height: 46px;
-    background: var(--accent); color: white;
-    border: none; border-radius: var(--radius);
-    font-size: 14px; font-weight: 600;
-    font-family: var(--sans);
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    margin-top: 1rem;
-  }
-
-  .submit-btn:hover { background: #175fa0; }
-  .submit-btn:active { transform: scale(0.99); }
-  .submit-btn:disabled { background: var(--text-tertiary); cursor: not-allowed; transform: none; }
-
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .status-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: 0 1px 4px rgba(30,80,140,0.06);
-  }
-
-  .job-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .job-id { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 500; }
-
-  .state-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 12px; border-radius: 20px;
-    font-size: 12px; font-weight: 600;
-  }
-
-  .state-Q { background: var(--warn-dim); color: var(--warn); border: 1px solid var(--warn-border); }
-  .state-R { background: var(--success-dim); color: var(--success); border: 1px solid var(--success-border); }
-  .state-C { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
-  .state-unknown { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border-strong); }
-
-  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
-
-  .stat-box {
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-  }
-
-  .stat-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; }
-  .stat-val { font-size: 15px; font-weight: 500; color: var(--text); }
-
-  .output-wrap {
-    background: #1e2a38;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    padding: 1rem 1.25rem;
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.8;
-    color: #cdd9e5;
-    white-space: pre-wrap;
-    overflow-x: auto;
-    max-height: 280px;
-    overflow-y: auto;
-  }
-
-  .btn-row { display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; }
-
-  .btn {
-    height: 38px; padding: 0 18px;
-    font-size: 13px; font-weight: 500;
-    border-radius: var(--radius);
-    cursor: pointer;
-    font-family: var(--sans);
-    border: 1px solid var(--border-strong);
-    background: transparent;
-    color: var(--text);
-    transition: all 0.15s;
-    display: flex; align-items: center; gap: 8px;
-  }
-
-  .btn:hover { background: var(--bg-hover); }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--accent); border-color: transparent; color: white; }
-  .btn-primary:hover { background: #175fa0; }
-
-  .steps { display: flex; flex-direction: column; }
-
-  .step {
-    display: flex; gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .step:last-child { border-bottom: none; padding-bottom: 0; }
-
-  .step-num {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: var(--accent-dim);
-    border: 1px solid var(--accent-border);
+    width: 100%; height: 46px; background: var(--gold); border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600;
-    color: var(--accent);
-    flex-shrink: 0; margin-top: 1px;
+    font-size: 13px; font-weight: 800; color: #0a0c10; gap: 8px;
+    cursor: pointer; transition: all 0.25s; user-select: none;
+    border: none; font-family: var(--sans);
+    position: relative; overflow: hidden;
+  }
+  .submit-btn:hover:not(.disabled) { background: #ffc933; transform: translateY(-1px); box-shadow: 0 4px 24px rgba(253,181,21,0.28); }
+  .submit-btn:active:not(.disabled) { transform: translateY(0) scale(0.99); }
+  .submit-btn.disabled { background: #1a1e28; color: #2a3848; cursor: not-allowed; transform: none; box-shadow: none; }
+  .submit-btn.unlock-glow { animation: unlockGlow 0.7s ease forwards; }
+  @keyframes unlockGlow { 0% { box-shadow: 0 0 0 0 rgba(253,181,21,0); } 40% { box-shadow: 0 0 28px 10px rgba(253,181,21,0.4); } 100% { box-shadow: 0 0 0 0 rgba(253,181,21,0.1); } }
+
+  .divider { height: 1px; background: var(--border); position: relative; margin: 4px 0; }
+  .divider-label {
+    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    background: var(--bg); padding: 0 10px;
+    font-size: 10px; color: #2a3848; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
   }
 
-  .step-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
-  .step-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+  .status-banner {
+    padding: 9px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    margin-bottom: 10px; display: none;
+  }
+  .status-banner.show { display: block; }
+  .status-banner.ok { background: var(--success-dim); border: 1px solid var(--success-border); color: var(--success); }
+  .status-banner.err { background: var(--danger-dim); border: 1px solid var(--danger-border); color: var(--danger); }
+  .status-banner.warn { background: var(--gold-dim); border: 1px solid var(--gold-border); color: #c89010; }
 
-  .cmd-block {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px;
-    background: #1e2a38;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    padding: 8px 12px;
-    margin-top: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: #7ee7b8;
+  .job-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .job-id { font-family: var(--mono); font-size: 13px; color: #4488cc; font-weight: 600; }
+  .state-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .state-Q { background: var(--gold-dim); color: #c89010; border: 1px solid var(--gold-border); }
+  .state-R { background: var(--accent-dim); color: #4488cc; border: 1px solid var(--accent-border); }
+  .state-C { background: var(--success-dim); color: var(--success); border: 1px solid var(--success-border); }
+  .state-unknown { background: #0d1117; color: #444; border: 1px solid var(--border); }
+  .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: blink 1.5s infinite; }
+  .pulse-dot.blue { background: #4488cc; }
+  .pulse-dot.amber { background: #c89010; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; }
+  .stat-label { font-size: 9px; color: #2a3848; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .stat-value { font-size: 15px; font-weight: 600; color: #e8eef8; }
+
+  .output-box {
+    background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--gold);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 13px; font-family: var(--mono); font-size: 11px; line-height: 1.8;
+    white-space: pre-wrap; min-height: 48px; margin-bottom: 12px;
+    color: #2a4060; transition: opacity 0.3s;
   }
 
-  .copy-btn {
-    font-size: 11px; color: var(--text-tertiary);
-    cursor: pointer; background: none; border: none;
-    font-family: var(--sans); padding: 0; flex-shrink: 0;
-    transition: color 0.1s;
+  .sftp-block {
+    background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 13px; font-size: 11.5px; color: #5a7a9a; line-height: 1.7; margin-bottom: 12px;
   }
-  .copy-btn:hover { color: var(--accent); }
+  .sftp-block strong { color: var(--text-secondary); font-weight: 500; }
+
+  .manual-cmd { background: var(--bg-input); border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 13px; font-family: var(--mono); font-size: 12px; color: #7ab8d8; display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+  .copy-btn { font-size: 11px; color: var(--text-tertiary); cursor: pointer; background: none; border: none; font-family: var(--sans); transition: color 0.1s; padding: 0; }
+  .copy-btn:hover { color: var(--text); }
   .copy-btn.copied { color: var(--success); }
 
-  .state-pill {
-    display: inline-flex; align-items: center;
-    font-size: 11px; font-weight: 500;
-    padding: 2px 8px; border-radius: 20px; margin-right: 4px;
-  }
-  .pill-q { background: var(--warn-dim); color: var(--warn); border: 1px solid var(--warn-border); }
-  .pill-r { background: var(--success-dim); color: var(--success); border: 1px solid var(--success-border); }
-  .pill-c { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--bg-input); padding: 1px 5px; border-radius: 4px; color: #7ab8d8; }
 
-  code {
-    font-family: var(--mono); font-size: 11.5px;
-    background: var(--accent-dim); padding: 1px 5px;
-    border-radius: 4px; color: var(--accent);
-  }
-
-  .hidden { display: none !important; }
+  .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15); transform: scale(0); animation: rippleAnim 0.5s linear; pointer-events: none; }
+  @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
 
   @media (max-width: 600px) {
-    .main { padding: 1.5rem 1rem 3rem; }
+    .main { padding: 16px 14px 50px; }
     .row { grid-template-columns: 1fr; }
-    .topbar { padding: 0 1rem; }
-    .stat-row { grid-template-columns: 1fr; }
+    .topbar { padding: 0 14px; }
   }
 </style>
 </head>
 <body>
 
+<canvas id="bgcanvas"></canvas>
+
 <div class="topbar">
-  <div class="topbar-left">
-    <div class="logo">BFR</div>
-    <div class="topbar-title">Sabalcore Job Generator</div>
+  <div class="brand">
+    <div class="emblem">BFR</div>
+    <div>
+      <div class="brand-title">Sabalcore job generator</div>
+      <div class="brand-sub">Berkeley Formula Racing · Internal tool</div>
+    </div>
   </div>
-  <div class="tab-bar">
-    <button class="tab active" onclick="switchTab('submit')">Submit job</button>
-    <button class="tab" onclick="switchTab('manual')">Manual guide</button>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('submit')">Submit job</div>
+    <div class="tab-sep"></div>
+    <div class="tab" onclick="switchTab('manual')">Manual guide</div>
   </div>
 </div>
 
 <div class="main">
 
-  <div class="view active" id="view-submit">
+  <div class="view" id="view-submit">
 
-    <div>
-      <div class="page-title">Submit a job</div>
-      <div class="page-sub">Upload your sim, fill in the config, and hit submit. Everything else is handled automatically.</div>
+    <div class="notice">
+      The Sabalcore terminal does not support Ctrl+V. Use <strong style="color:#88aad0;">Shift+Insert</strong> to paste in the terminal instead.
     </div>
 
-    <div class="card">
-      <div class="card-title">Pre-flight checklist</div>
-      <div class="checklist">
-        <label class="check-item" id="ci-mesh" onclick="toggleCheck('ci-mesh','cb-mesh')">
-          <input type="checkbox" id="cb-mesh" onclick="event.stopPropagation();toggleCheck('ci-mesh','cb-mesh')">
-          <div>
-            <div class="check-label">Mesh cleared in STAR-CCM+</div>
-            <div class="check-sub">File → Clear Generated Mesh before saving. Sabalcore handles meshing. Do not submit a pre-meshed sim.</div>
-          </div>
-        </label>
-        <label class="check-item" id="ci-iter" onclick="toggleCheck('ci-iter','cb-iter')">
-          <input type="checkbox" id="cb-iter" onclick="event.stopPropagation();toggleCheck('ci-iter','cb-iter')">
-          <div>
-            <div class="check-label">Max iterations set to 800</div>
-            <div class="check-sub">Stopping Criteria → Maximum Steps → 800.</div>
-          </div>
-        </label>
-        <label class="check-item" id="ci-stop" onclick="toggleCheck('ci-stop','cb-stop')">
-          <input type="checkbox" id="cb-stop" onclick="event.stopPropagation();toggleCheck('ci-stop','cb-stop')">
-          <div>
-            <div class="check-label">Convergence stopping criterion enabled</div>
-            <div class="check-sub">Stopping Criteria → confirm the drag convergence criterion is active, not just defined.</div>
-          </div>
-        </label>
-        <label class="check-item" id="ci-reports" onclick="toggleCheck('ci-reports','cb-reports')">
-          <input type="checkbox" id="cb-reports" onclick="event.stopPropagation();toggleCheck('ci-reports','cb-reports')">
-          <div>
-            <div class="check-label">Force reports configured correctly</div>
-            <div class="check-sub">Drag, downforce, and moment reports set to correct reference area, direction, and coordinate system.</div>
-          </div>
-        </label>
-        <label class="check-item" id="ci-save" onclick="toggleCheck('ci-save','cb-save')">
-          <input type="checkbox" id="cb-save" onclick="event.stopPropagation();toggleCheck('ci-save','cb-save')">
-          <div>
-            <div class="check-label">Sim saved as STAR-CCM+ 2506</div>
-            <div class="check-sub">File → Save. Confirm 2506 / 20.04.007 is shown in the title bar.</div>
-          </div>
-        </label>
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="card" id="card-checklist">
+      <div class="section-header">
+        <div class="section-num" id="num1">1</div>
+        <span class="section-title">Pre-flight checklist</span>
       </div>
-      <div class="checklist-banner banner-warn" id="checklist-banner">0 / 5 complete. Finish checklist before submitting.</div>
+      <div class="checklist" id="checklist">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="cb"></div>
+          <div><div class="check-label">Mesh cleared in STAR-CCM+</div><div class="check-sub">File → Clear Generated Mesh before saving. Sabalcore handles meshing.</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="cb"></div>
+          <div><div class="check-label">Max iterations set to 800</div><div class="check-sub">Stopping Criteria → Maximum Steps → 800</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="cb"></div>
+          <div><div class="check-label">Convergence criterion enabled</div><div class="check-sub">Confirm drag criterion is active, not just defined</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="cb"></div>
+          <div><div class="check-label">Force reports configured correctly</div><div class="check-sub">Drag, downforce, moments — correct reference area and direction</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="cb"></div>
+          <div><div class="check-label">Sim saved as STAR-CCM+ 2506</div><div class="check-sub">Confirm version in title bar before transferring</div></div>
+        </div>
+      </div>
+      <div class="progress-row">
+        <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+        <span class="prog-label" id="prog-label">0 / 5 — complete checklist first</span>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Sabalcore credentials</div>
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <span class="section-title">Credentials</span>
+      </div>
       <div class="row">
         <div class="field">
           <label>Username</label>
@@ -478,17 +345,20 @@
           <input type="password" id="password" placeholder="Sabalcore password">
         </div>
       </div>
-      <div class="hint">Credentials are used only to transfer files and submit the job. They are never stored.</div>
+      <div class="hint" style="margin-top:6px;">Credentials are used only to transfer files and submit. Never stored.</div>
     </div>
 
     <div class="card">
-      <div class="card-title">Job configuration</div>
-      <div class="field">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <span class="section-title">Job configuration</span>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
         <label>Simulation file</label>
         <input type="file" id="sim-file" accept=".sim" onchange="onFileChange()">
         <div class="hint" id="file-hint">Select your .sim file. Max 200 MB.</div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-bottom:12px;">
         <div class="field">
           <label>Job name</label>
           <input type="text" id="job-name" value="BFR_run">
@@ -513,125 +383,109 @@
           <label>Nodes (<span id="nodes-label">8</span>)</label>
           <div class="slider-row">
             <input type="range" min="1" max="16" value="8" id="nodes" step="1" oninput="updateCores()">
-            <span class="slider-val" id="nodes-val">8</span>
+            <span style="font-size:12px;font-weight:600;color:#e0e0e0;min-width:20px;" id="nodes-val">8</span>
           </div>
-          <div class="cores-badge" id="cores-badge">128 total cores</div>
-          <div class="hint-strong" id="cores-warning">Keep cores at 128 unless you know what you are doing. If unsure, ask Dohyun.</div>
+          <div class="cores-pill" id="cores-pill">128 total cores</div>
+          <div class="hint-warn" id="cores-warn" style="margin-top:6px;">Keep cores at 128 unless you know what you are doing. If unsure, ask Dohyun.</div>
         </div>
-      </div>
-    </div>
-
-    <div id="submit-status" class="hidden"></div>
-
-    <button class="submit-btn" id="submit-btn" onclick="submitJob()">
-      Submit job to Sabalcore
-    </button>
-
-        <div class="status-card hidden" id="status-card">
-      <div class="card-title">Job status</div>
-      <div class="job-header">
-        <span class="job-id" id="status-job-id"></span>
-        <span class="state-badge state-unknown" id="status-badge">...</span>
-      </div>
-      <div class="stat-row">
-        <div class="stat-box">
-          <div class="stat-label">Wall time</div>
-          <div class="stat-val" id="status-walltime">...</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Sim file</div>
-          <div class="stat-val" id="status-simfile" style="font-size:12px;word-break:break-all;"></div>
-        </div>
-      </div>
-      <div class="output-wrap" id="status-output">Waiting for status check...</div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="checkStatus()">Check status</button>
-        <button class="btn" id="kill-btn" onclick="killJob()" style="border-color:var(--danger-border);color:var(--danger);">Kill job</button>
-        <button class="btn btn-primary" id="download-btn" onclick="downloadSim()" style="display:none;">Download sim</button>
-        <button class="btn" id="clear-btn" onclick="clearBfr()" style="display:none;border-color:var(--warn-border);color:var(--warn);">Clear ~/bfr/</button>
-      </div>
-    </div>
-
-<div class="view" id="view-manual">
-
-    <div>
-      <div class="page-title">Manual submission guide</div>
-      <div class="page-sub">Use this if you prefer to submit manually via the Sabalcore terminal.</div>
-      <div class="notice-banner">
-        The Sabalcore terminal does not support Ctrl+V for paste. Use <strong>Shift+Insert</strong> instead. Every command below has a copy button.
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Submission steps</div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-content">
-            <div class="step-title">Transfer files to Sabalcore</div>
-            <div class="step-desc">In ssClient go to <strong>Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <code>~/bfr/</code> on the right. Transfer your <code>.sim file</code> and <code>run.pbs</code>.</div>
-          </div>
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <span class="section-title">Generated run.pbs</span>
+      </div>
+      <div class="pbs-preview" id="pbs-preview"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="downloadPBS(); rippleEl(this)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 6l3 3 3-3M1 10h10" stroke="#c8dff0" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Download run.pbs
+        </button>
+        <button class="btn btn-ghost" onclick="copyPBS(); rippleEl(this)" id="copy-pbs-btn">Copy to clipboard</button>
+      </div>
+    </div>
+
+    <button class="submit-btn disabled" id="submit-btn" onclick="submitJob()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M7 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Submit job to Sabalcore
+    </button>
+
+    <div class="divider"><span class="divider-label">Job status</span></div>
+
+    <div class="card hidden" id="status-card" style="margin-top:6px;">
+      <div class="job-header">
+        <span class="job-id" id="status-job-id"></span>
+        <span class="state-badge state-unknown" id="status-badge">...</span>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-label">Job state</div>
+          <div class="stat-value" id="status-state" style="font-size:13px;">...</div>
         </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-content">
-            <div class="step-title">Navigate to the job folder</div>
-            <div class="cmd-block"><span>cd ~/bfr</span><button class="copy-btn" onclick="copyCmd(this,'cd ~/bfr')">copy</button></div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-content">
-            <div class="step-title">Fix Windows line endings</div>
-            <div class="step-desc">Always run this before submitting. The file was created on Windows and needs this fix.</div>
-            <div class="cmd-block"><span>dos2unix run.pbs</span><button class="copy-btn" onclick="copyCmd(this,'dos2unix run.pbs')">copy</button></div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-content">
-            <div class="step-title">Submit the job</div>
-            <div class="cmd-block"><span>qsub run.pbs</span><button class="copy-btn" onclick="copyCmd(this,'qsub run.pbs')">copy</button></div>
-            <div class="step-desc" style="margin-top:6px;">You will get a job ID like <code>1477892.jman</code>. Write it down.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-content">
-            <div class="step-title">Monitor the job</div>
-            <div class="cmd-block"><span>watch -n 5 qstat</span><button class="copy-btn" onclick="copyCmd(this,'watch -n 5 qstat')">copy</button></div>
-            <div class="step-desc" style="margin-top:8px;">
-              <span class="state-pill pill-q">Q</span> queued, no charge &nbsp;
-              <span class="state-pill pill-r">R</span> running, credits burning &nbsp;
-              <span class="state-pill pill-c">C</span> complete
-              <br><br>Press <code>Ctrl+C</code> to stop watching.
-            </div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">6</div>
-          <div class="step-content">
-            <div class="step-title">Watch live solver output</div>
-            <div class="cmd-block"><span>tail -f ~/.pbs_spool/JOBID.jman.OU</span><button class="copy-btn" onclick="copyCmd(this,'tail -f ~/.pbs_spool/JOBID.jman.OU')">copy</button></div>
-            <div class="step-desc" style="margin-top:6px;">Replace <code>JOBID</code> with your job number. Press <code>Ctrl+C</code> to stop.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">7</div>
-          <div class="step-content">
-            <div class="step-title">Check output after completion</div>
-            <div class="cmd-block"><span>cat ~/bfr/BFR_run.oJOBID</span><button class="copy-btn" onclick="copyCmd(this,'cat ~/bfr/BFR_run.oJOBID')">copy</button></div>
-            <div class="cmd-block" style="margin-top:6px;"><span>cat ~/bfr/BFR_run.eJOBID</span><button class="copy-btn" onclick="copyCmd(this,'cat ~/bfr/BFR_run.eJOBID')">copy</button></div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">8</div>
-          <div class="step-content">
-            <div class="step-title">Transfer results back to your PC</div>
-            <div class="step-desc">Use ssClient SFTP to pull the completed <code>.sim</code> and results files back for post-processing.</div>
-          </div>
+        <div class="stat-box">
+          <div class="stat-label">Sim file</div>
+          <div class="stat-value" id="status-simfile" style="font-size:11px;word-break:break-all;"></div>
         </div>
       </div>
+      <div class="output-box" id="output-box">Submit a job to see status here.</div>
+      <div class="sftp-block">
+        <strong>To download results:</strong> open ssClient → Tools → SFTP File Transfers → navigate to <strong>~/bfr/</strong> on the right pane → transfer your completed .sim and output files to your PC.
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="checkStatus(); rippleEl(this)" id="check-btn">Check status</button>
+        <button class="btn btn-danger" onclick="killJob(); rippleEl(this)" id="kill-btn">Kill job</button>
+        <button class="btn btn-warn" onclick="clearBfr(); rippleEl(this)" id="clear-btn">Clear ~/bfr/</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="view hidden" id="view-manual">
+
+    <div class="notice">Use this guide if you prefer submitting directly through the Sabalcore terminal.</div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-num">1</div><span class="section-title">Transfer files to Sabalcore</span></div>
+      <p style="font-size:12px;color:#5a7a9a;line-height:1.7;">In ssClient go to <strong style="color:#8aaac8;">Tools → SFTP File Transfers</strong>. Left pane is your PC, right pane is Sabalcore. Navigate to <strong style="color:#8aaac8;">~/bfr/</strong> on the right. Transfer your <code>.sim</code> file and <code>run.pbs</code>.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-num">2</div><span class="section-title">Submit and monitor</span></div>
+      <div class="manual-cmd"><span>cd ~/bfr</span><button class="copy-btn" onclick="copyCmd(this,'cd ~/bfr')">copy</button></div>
+      <div class="manual-cmd"><span>dos2unix run.pbs</span><button class="copy-btn" onclick="copyCmd(this,'dos2unix run.pbs')">copy</button></div>
+      <div class="manual-cmd"><span>qsub run.pbs</span><button class="copy-btn" onclick="copyCmd(this,'qsub run.pbs')">copy</button></div>
+      <div class="manual-cmd"><span>watch -n 5 qstat</span><button class="copy-btn" onclick="copyCmd(this,'watch -n 5 qstat')">copy</button></div>
+    </div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-num">3</div><span class="section-title">Job states</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="state-badge state-Q" style="min-width:52px;justify-content:center;">Q</span>
+          <span style="font-size:12px;color:#5a7a9a;">Queued — waiting for nodes. No credits charged.</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="state-badge state-R" style="min-width:52px;justify-content:center;">R</span>
+          <span style="font-size:12px;color:#5a7a9a;">Running — credits are being consumed.</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="state-badge state-C" style="min-width:52px;justify-content:center;">C</span>
+          <span style="font-size:12px;color:#5a7a9a;">Complete — transfer results via SFTP from ~/bfr/.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-num">4</div><span class="section-title">Live output while running</span></div>
+      <div class="manual-cmd"><span>tail -f ~/.pbs_spool/JOBID.jman.OU</span><button class="copy-btn" onclick="copyCmd(this,'tail -f ~/.pbs_spool/JOBID.jman.OU')">copy</button></div>
+      <p style="font-size:11px;color:#3a5070;margin-top:8px;">Replace JOBID with your actual job number. Press Ctrl+C to stop.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-num">5</div><span class="section-title">Kill or clear</span></div>
+      <div class="manual-cmd"><span>qdel JOBID.jman</span><button class="copy-btn" onclick="copyCmd(this,'qdel JOBID.jman')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>rm -f ~/bfr/*</span><button class="copy-btn" onclick="copyCmd(this,'rm -f ~/bfr/*')">copy</button></div>
     </div>
 
   </div>
@@ -640,33 +494,61 @@
 
 <script>
   const BACKEND_URL = 'https://resample-phoniness-partridge.ngrok-free.dev';
-  const checks = ['ci-mesh','ci-iter','ci-stop','ci-reports','ci-save'];
+  const checks_ids = Array.from(document.querySelectorAll('.check-item'));
+  let checkedCount = 0;
   let currentJobId = null;
   let currentCreds = null;
+  let currentSimFile = null;
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
     document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
-    document.getElementById('view-' + tab).classList.add('active');
+    document.getElementById('view-' + tab).classList.remove('hidden');
   }
 
-  function toggleCheck(itemId, cbId) {
-    const cb = document.getElementById(cbId);
-    cb.checked = !cb.checked;
-    document.getElementById(itemId).classList.toggle('done', cb.checked);
-    updateBanner();
-  }
-
-  function updateBanner() {
-    const done = checks.filter(id => document.getElementById(id).classList.contains('done')).length;
-    const banner = document.getElementById('checklist-banner');
-    if (done === checks.length) {
-      banner.textContent = 'All checks passed. Ready to submit.';
-      banner.className = 'checklist-banner banner-ok';
+  function toggleCheck(el) {
+    const cb = el.querySelector('.cb');
+    const isDone = el.classList.contains('done');
+    if (isDone) {
+      el.classList.remove('done');
+      cb.classList.remove('checked');
+      cb.innerHTML = '';
+      checkedCount--;
     } else {
-      banner.textContent = done + ' / ' + checks.length + ' complete. Finish checklist before submitting.';
-      banner.className = 'checklist-banner banner-warn';
+      el.classList.add('done');
+      cb.classList.add('checked');
+      cb.innerHTML = '<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#c0d8f0" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      checkedCount++;
+      el.style.transform = 'translateX(4px)';
+      setTimeout(() => el.style.transform = '', 200);
+    }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const pct = (checkedCount / 5) * 100;
+    const fill = document.getElementById('prog-fill');
+    const label = document.getElementById('prog-label');
+    const num = document.getElementById('num1');
+    const btn = document.getElementById('submit-btn');
+    fill.style.width = pct + '%';
+    if (checkedCount === 5) {
+      fill.style.background = 'var(--gold)';
+      fill.classList.add('celebrate');
+      setTimeout(() => fill.classList.remove('celebrate'), 600);
+      label.textContent = 'All checks passed. Ready to submit.';
+      label.style.color = 'var(--gold)';
+      num.classList.add('done');
+      btn.classList.remove('disabled');
+      btn.classList.add('unlock-glow');
+      setTimeout(() => btn.classList.remove('unlock-glow'), 700);
+    } else {
+      fill.style.background = 'var(--accent)';
+      label.textContent = checkedCount + ' / 5 — complete checklist first';
+      label.style.color = '#c89010';
+      num.classList.remove('done');
+      btn.classList.add('disabled');
     }
   }
 
@@ -676,13 +558,12 @@
     const total = nodes * ppn;
     document.getElementById('nodes-val').textContent = nodes;
     document.getElementById('nodes-label').textContent = nodes;
-    document.getElementById('cores-badge').textContent = total + ' total cores';
-    const warn = document.getElementById('cores-warning');
-    if (total !== 128) {
-      warn.textContent = 'You changed the core count to ' + total + '. Keep at 128 unless you know what you are doing. If unsure, ask Dohyun.';
-    } else {
-      warn.textContent = 'Keep cores at 128 unless you know what you are doing. If unsure, ask Dohyun.';
-    }
+    document.getElementById('cores-pill').textContent = total + ' total cores';
+    const warn = document.getElementById('cores-warn');
+    warn.textContent = total !== 128
+      ? 'You changed the core count to ' + total + '. Keep at 128 unless you know what you are doing. If unsure, ask Dohyun.'
+      : 'Keep cores at 128 unless you know what you are doing. If unsure, ask Dohyun.';
+    updatePBSPreview();
   }
 
   function onFileChange() {
@@ -690,70 +571,84 @@
     if (file) {
       const mb = (file.size / 1024 / 1024).toFixed(1);
       document.getElementById('file-hint').textContent = file.name + ' (' + mb + ' MB)';
+      updatePBSPreview();
     }
   }
 
-  function setStatus(msg, type) {
-    const el = document.getElementById('submit-status');
-    el.className = 'checklist-banner ' + (type === 'error' ? 'banner-err' : type === 'ok' ? 'banner-ok' : 'banner-warn');
+  function getPBSContent() {
+    const simfile = (document.getElementById('sim-file').files[0] || {name: 'YOURFILE.sim'}).name;
+    const jobname = document.getElementById('job-name').value.trim() || 'BFR_run';
+    const runmode = document.getElementById('run-mode').value;
+    const nodes = document.getElementById('nodes').value;
+    const ppn = document.getElementById('ppn').value;
+    return `#PBS -l nodes=${nodes}:red:ppn=${ppn}\n#PBS -l nodes+=${nodes}:copper:ppn=${ppn}\n#PBS -l nodes++=${nodes}:blue:ppn=${ppn}\n#PBS -N ${jobname}\n\ncd $PBS_O_WORKDIR\n\nmodule load starccm/20.04.007\n\nstarccm+ -power -podkey [POD_KEY] -np $PBS_NP -batch ${runmode} ${simfile}`;
+  }
+
+  function updatePBSPreview() {
+    const content = getPBSContent();
+    const el = document.getElementById('pbs-preview');
+    el.innerHTML = content
+      .replace(/(#PBS)/g, '<span class="k">$1</span>')
+      .replace(/\b(-l|-N|-np|-batch|-power|-podkey)\b/g, '<span class="k">$1</span>')
+      .replace(/(module load|cd|starccm\+)/g, '<span class="v">$1</span>')
+      .replace(/(starccm\/20\.04\.007|\$PBS_O_WORKDIR|\$PBS_NP)/g, '<span class="s">$1</span>');
+  }
+
+  function downloadPBS() {
+    const blob = new Blob([getPBSContent()], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'run.pbs';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  function copyPBS() {
+    navigator.clipboard.writeText(getPBSContent()).then(() => {
+      const btn = document.getElementById('copy-pbs-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy to clipboard', 2000);
+    });
+  }
+
+  function showBanner(msg, type) {
+    const el = document.getElementById('status-banner');
     el.textContent = msg;
-    el.classList.remove('hidden');
+    el.className = 'status-banner show ' + type;
   }
 
   function updateStatusUI(data) {
     const stateMap = { Q: 'Queued', R: 'Running', C: 'Complete' };
     const state = data.state || 'unknown';
     const badge = document.getElementById('status-badge');
-    badge.textContent = stateMap[state] || state;
     badge.className = 'state-badge state-' + (stateMap[state] ? state : 'unknown');
-    if (data.walltime) document.getElementById('status-walltime').textContent = data.walltime;
-    if (data.output) document.getElementById('status-output').textContent = data.output;
-
-    if (state === 'C') {
-      document.getElementById('download-btn').style.display = 'flex';
-      document.getElementById('clear-btn').style.display = 'flex';
-      document.getElementById('kill-btn').style.display = 'none';
-      setStatus('Job complete. Download your sim or clear ~/bfr/ when done.', 'ok');
-    }
-  }
-
-  async function checkStatus() {
-    if (!currentJobId || !currentCreds) return;
-    const btn = document.querySelector('[onclick="checkStatus()"]');
-    btn.textContent = 'Checking...';
-    btn.disabled = true;
-    const formData = new FormData();
-    formData.append('username', currentCreds.username);
-    formData.append('password', currentCreds.password);
-    formData.append('job_id', currentJobId);
-    try {
-      const res = await fetch(BACKEND_URL + '/status', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (res.ok) updateStatusUI(data);
-      else setStatus('Status check failed: ' + (data.detail || 'Unknown error'), 'error');
-    } catch(e) {
-      setStatus('Could not reach backend. Check that SC1 is running.', 'error');
-    } finally {
-      btn.textContent = 'Check status';
-      btn.disabled = false;
-    }
+    let badgeHTML = stateMap[state] || state;
+    if (state === 'R') badgeHTML = '<div class="pulse-dot blue"></div>' + badgeHTML;
+    if (state === 'Q') badgeHTML = '<div class="pulse-dot amber"></div>' + badgeHTML;
+    badge.innerHTML = badgeHTML;
+    const stateEl = document.getElementById('status-state');
+    stateEl.textContent = stateMap[state] || state;
+    stateEl.style.color = state === 'R' ? '#4488cc' : state === 'C' ? 'var(--success)' : state === 'Q' ? '#c89010' : '#444';
+    const out = document.getElementById('output-box');
+    out.style.opacity = '0';
+    setTimeout(() => {
+      out.textContent = data.output || 'No output available.';
+      out.style.opacity = '1';
+    }, 150);
+    if (state === 'C') showBanner('Job complete. Transfer results via ssClient SFTP from ~/bfr/.', 'ok');
   }
 
   async function submitJob() {
-    const allChecked = checks.every(id => document.getElementById(id).classList.contains('done'));
-    if (!allChecked) { setStatus('Complete the pre-flight checklist first.', 'error'); return; }
-
+    const btn = document.getElementById('submit-btn');
+    if (btn.classList.contains('disabled')) return;
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
     const simFile = document.getElementById('sim-file').files[0];
+    if (!username || !password) { showBanner('Enter your Sabalcore username and password.', 'err'); return; }
+    if (!simFile) { showBanner('Select a .sim file to upload.', 'err'); return; }
 
-    if (!username || !password) { setStatus('Enter your Sabalcore username and password.', 'error'); return; }
-    if (!simFile) { setStatus('Select a .sim file to upload.', 'error'); return; }
-
-    const btn = document.getElementById('submit-btn');
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> Uploading and submitting...';
-    setStatus('Uploading ' + simFile.name + ' to Sabalcore...', 'warn');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="8 4"><animateTransform attributeName="transform" type="rotate" from="0 7 7" to="360 7 7" dur="0.8s" repeatCount="indefinite"/></circle></svg> Uploading...';
+    showBanner('Uploading ' + simFile.name + ' to Sabalcore...', 'warn');
 
     const formData = new FormData();
     formData.append('sim_file', simFile);
@@ -767,25 +662,42 @@
     try {
       const res = await fetch(BACKEND_URL + '/submit', { method: 'POST', body: formData });
       const data = await res.json();
-      if (!res.ok) { setStatus('Error: ' + (data.detail || 'Submission failed.'), 'error'); return; }
-
+      if (!res.ok) { showBanner('Error: ' + (data.detail || 'Submission failed.'), 'err'); return; }
       currentJobId = data.job_id;
       currentCreds = { username, password };
-
-      setStatus('Job submitted. ID: ' + currentJobId, 'ok');
+      currentSimFile = simFile.name;
+      showBanner('Job submitted. ID: ' + currentJobId, 'ok');
       document.getElementById('status-card').classList.remove('hidden');
       document.getElementById('status-job-id').textContent = currentJobId;
       document.getElementById('status-simfile').textContent = simFile.name;
-      document.getElementById('download-btn').style.display = 'none';
-      document.getElementById('clear-btn').style.display = 'none';
-      document.getElementById('kill-btn').style.display = 'flex';
-      document.getElementById('status-output').textContent = 'Job submitted. Click Check status to see progress.';
-
+      document.getElementById('output-box').textContent = 'Job submitted. Click Check status to see progress.';
     } catch(e) {
-      setStatus('Could not reach backend. SC1 may be offline or ngrok URL changed.', 'error');
+      showBanner('Could not reach backend. Check that SC1 is running and ngrok is active.', 'err');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = 'Submit job to Sabalcore';
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M7 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Submit job to Sabalcore';
+    }
+  }
+
+  async function checkStatus() {
+    if (!currentJobId || !currentCreds) return;
+    const btn = document.getElementById('check-btn');
+    btn.textContent = 'Checking...';
+    btn.disabled = true;
+    const formData = new FormData();
+    formData.append('username', currentCreds.username);
+    formData.append('password', currentCreds.password);
+    formData.append('job_id', currentJobId);
+    try {
+      const res = await fetch(BACKEND_URL + '/status', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok) updateStatusUI(data);
+      else showBanner('Status check failed: ' + (data.detail || 'Unknown error'), 'err');
+    } catch(e) {
+      showBanner('Could not reach backend. Check that SC1 is running.', 'err');
+    } finally {
+      btn.textContent = 'Check status';
+      btn.disabled = false;
     }
   }
 
@@ -803,69 +715,44 @@
       const res = await fetch(BACKEND_URL + '/kill', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok) {
-        setStatus('Job ' + currentJobId + ' killed.', 'ok');
-        document.getElementById('status-badge').textContent = 'Killed';
+        showBanner('Job ' + currentJobId + ' killed.', 'ok');
         document.getElementById('status-badge').className = 'state-badge state-unknown';
-        document.getElementById('status-output').textContent = 'Job was killed.';
+        document.getElementById('status-badge').textContent = 'Killed';
+        document.getElementById('output-box').textContent = 'Job was killed.';
       } else {
-        setStatus('Failed to kill: ' + (data.detail || 'Unknown error'), 'error');
+        showBanner('Failed to kill: ' + (data.detail || 'Unknown error'), 'err');
       }
     } catch(e) {
-      setStatus('Could not reach backend.', 'error');
+      showBanner('Could not reach backend.', 'err');
     } finally {
       btn.textContent = 'Kill job';
       btn.disabled = false;
     }
   }
 
-  async function downloadSim() {
-    if (!currentJobId || !currentCreds) return;
-    const btn = document.getElementById('download-btn');
-    btn.textContent = 'Downloading...';
-    btn.disabled = true;
-    const dlForm = new FormData();
-    dlForm.append('username', currentCreds.username);
-    dlForm.append('password', currentCreds.password);
-    dlForm.append('job_id', currentJobId);
-    try {
-      const res = await fetch(BACKEND_URL + '/download', { method: 'POST', body: dlForm });
-      if (!res.ok) {
-        const data = await res.json();
-        setStatus('Download failed: ' + (data.detail || 'Unknown error'), 'error');
-        return;
-      }
-      const blob = await res.blob();
-      const disposition = res.headers.get('Content-Disposition') || '';
-      const filename = disposition.split('filename=')[1] || 'result.sim';
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    } catch(e) {
-      setStatus('Download failed: ' + e.message, 'error');
-    } finally {
-      btn.textContent = 'Download sim';
-      btn.disabled = false;
-    }
-  }
-
   async function clearBfr() {
     if (!currentCreds) return;
-    if (!confirm('Clear all files in ~/bfr/ on Sabalcore? Make sure you have downloaded your results first.')) return;
+    if (!confirm('Clear all files in ~/bfr/ on Sabalcore? Make sure you have already downloaded your results.')) return;
     const formData = new FormData();
     formData.append('username', currentCreds.username);
     formData.append('password', currentCreds.password);
     try {
       const res = await fetch(BACKEND_URL + '/clear', { method: 'POST', body: formData });
       if (res.ok) {
-        setStatus('~/bfr/ cleared.', 'ok');
-        document.getElementById('status-output').textContent = 'Cleared.';
-        document.getElementById('download-btn').style.display = 'none';
-        document.getElementById('clear-btn').style.display = 'none';
+        showBanner('~/bfr/ cleared successfully.', 'ok');
+        document.getElementById('output-box').textContent = 'Cleared.';
       }
     } catch(e) {
-      setStatus('Clear failed: ' + e.message, 'error');
+      showBanner('Clear failed. Check that SC1 is running.', 'err');
     }
+  }
+
+  function rippleEl(btn) {
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    r.style.cssText = 'width:80px;height:80px;left:calc(50% - 40px);top:calc(50% - 40px);';
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 500);
   }
 
   function copyCmd(btn, cmd) {
@@ -876,6 +763,40 @@
     });
   }
 
+  const canvas = document.getElementById('bgcanvas');
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = document.body.scrollHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  const dots = Array.from({length: 160}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 0.9 + 0.2,
+    a: Math.random() * Math.PI * 2,
+    s: (Math.random() - 0.5) * 0.12
+  }));
+  function drawDots() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    dots.forEach(d => {
+      d.a += d.s * 0.02;
+      d.x += Math.cos(d.a) * 0.07;
+      d.y += Math.sin(d.a) * 0.07;
+      if (d.x < 0) d.x = canvas.width;
+      if (d.x > canvas.width) d.x = 0;
+      if (d.y < 0) d.y = canvas.height;
+      if (d.y > canvas.height) d.y = 0;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,85,179,0.3)';
+      ctx.fill();
+    });
+    requestAnimationFrame(drawDots);
+  }
+  drawDots();
+  updatePBSPreview();
   updateCores();
 </script>
 </body>
