@@ -534,8 +534,8 @@
     document.getElementById('cores-pill').textContent = total + ' total cores';
     const warn = document.getElementById('cores-warn');
     warn.textContent = total !== 64
-      ? "You changed the core count to ' + total + '. Keep at 64 unless you know what you are doing. ASK ME IF YOU'RE NOT SURE!!"
-      : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!";
+      ? 'You changed the core count to ' + total + '. Keep at 64 unless you know what you are doing. ASK ME IF YOU ARE NOT SURE!!"
+      : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU ARE NOT SURE!!";
     updatePBSPreview();
   }
 
