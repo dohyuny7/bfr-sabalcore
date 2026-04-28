@@ -288,7 +288,7 @@
     <div class="card">
       <div class="section-header">
         <div class="section-num" id="num1">1</div>
-        <span class="section-title">Pre-flight checklist</span>
+        <span class="section-title">Pre-run checklist</span>
       </div>
       <div class="checklist">
         <div class="check-item" onclick="toggleCheck(this)">
@@ -368,10 +368,10 @@
           </select>
         </div>
         <div class="field">
-          <label>Nodes (<span id="nodes-label">8</span>)</label>
+          <label>Nodes (<span id="nodes-label">4</span>)</label>
           <div class="slider-row">
-            <input type="range" min="1" max="16" value="8" id="nodes" step="1" oninput="updateCores()">
-            <span style="font-size:12px;font-weight:600;color:#c9d1d9;min-width:20px;" id="nodes-val">8</span>
+            <input type="range" min="1" max="16" value="4" id="nodes" step="1" oninput="updateCores()">
+            <span style="font-size:12px;font-weight:600;color:#c9d1d9;min-width:20px;" id="nodes-val">4</span>
           </div>
           <div class="cores-pill" id="cores-pill">128 total cores</div>
           <div class="hint-warn" id="cores-warn" style="margin-top:6px;">Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!</div>
@@ -534,7 +534,7 @@
     document.getElementById('cores-pill').textContent = total + ' total cores';
     const warn = document.getElementById('cores-warn');
     warn.textContent = total !== 128
-      ? 'You changed the core count to ' + total + '. Keep at 128 unless you know what you are doing. If unsure, ask Dohyun.'
+      ? 'You changed the core count to ' + total + '. Keep at 64 unless you know what you are doing. If unsure, ask Dohyun.'
       : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!";
     updatePBSPreview();
   }
