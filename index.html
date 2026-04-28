@@ -250,21 +250,7 @@
   .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.12); transform: scale(0); animation: rippleAnim 0.45s linear; pointer-events: none; }
   @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
 
-  .dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .cluster-item { display: grid; grid-template-columns: 52px 1fr 72px 58px; align-items: center; gap: 8px; padding: 7px 9px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); }
-  .cluster-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: #c9d1d9; }
-  .cluster-badge { display: inline-flex; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 600; }
-  .cb-open { background: rgba(63,185,80,0.1); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
-  .cb-partial { background: rgba(253,181,21,0.08); color: #c89010; border: 1px solid rgba(253,181,21,0.3); }
-  .cb-full { background: rgba(248,81,73,0.08); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
-  .core-track { height: 3px; background: #21262d; border-radius: 2px; overflow: hidden; }
-  .core-fill { height: 100%; border-radius: 2px; }
-  .core-fill-green { background: #3fb950; }
-  .core-fill-amber { background: #c89010; }
-  .core-fill-red { background: #f85149; }
-  .core-count { font-family: var(--mono); font-size: 10px; color: #8b949e; white-space: nowrap; }
-  
-    .hidden { display: none !important; }
+  .hidden { display: none !important; }
 
   @media (max-width: 600px) {
     .main { padding: 16px 12px 50px; }
@@ -299,50 +285,10 @@
 
     <div class="status-banner" id="status-banner"></div>    <div class="status-banner" id="status-banner"></div>
 
-    <div class="row" id="dashboard-row" style="display:none;">
-      <div class="card" id="balance-card">
-        <div class="section-header" style="margin-bottom:10px;">
-          <div class="section-num" style="background:#1f6feb;">$</div>
-          <span class="section-title">Account balance</span>
-          <button onclick="loadDashboard()" style="margin-left:auto;background:transparent;border:none;color:#6e7681;cursor:pointer;font-size:11px;font-family:var(--sans);">Refresh</button>
-        </div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
-          <span style="font-size:26px;font-weight:600;color:#e6edf3;" id="bal-remaining">—</span>
-          <span style="font-size:12px;color:#8b949e;">core-hours</span>
-        </div>
-        <div style="font-size:11px;color:#6e7681;margin-bottom:10px;" id="bal-reset">Loading...</div>
-        <div class="row" style="gap:8px;margin-bottom:10px;">
-          <div class="stat-box"><div class="stat-label">Used this month</div><div class="stat-value" style="font-size:13px;" id="bal-used">—</div></div>
-          <div class="stat-box"><div class="stat-label">Storage used</div><div class="stat-value" style="font-size:13px;" id="bal-storage">—</div></div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:#8b949e;margin-bottom:4px;">
-            <span>Monthly usage</span>
-            <span id="bal-bar-label">—</span>
-          </div>
-          <div style="height:4px;background:#21262d;border-radius:2px;overflow:hidden;">
-            <div id="bal-bar-fill" style="height:100%;border-radius:2px;background:#1f6feb;width:0%;transition:width 0.5s;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" id="cluster-card">
-        <div class="section-header" style="margin-bottom:10px;">
-          <div class="section-num" style="background:#1f6feb;">~</div>
-          <span class="section-title">Cluster status</span>
-          <button onclick="loadDashboard()" style="margin-left:auto;background:transparent;border:none;color:#6e7681;cursor:pointer;font-size:11px;font-family:var(--sans);">Refresh</button>
-        </div>
-        <div id="cluster-list" style="display:flex;flex-direction:column;gap:5px;">
-          <div style="font-size:12px;color:#6e7681;padding:8px 0;">Loading clusters...</div>
-        </div>
-        <div style="font-size:10px;color:#484f58;text-align:right;margin-top:6px;" id="cluster-time"></div>
-      </div>
-    </div>
-
     <div class="card">
       <div class="section-header">
         <div class="section-num" id="num1">1</div>
-        <span class="section-title">Pre-run checklist</span>
+        <span class="section-title">Pre-flight checklist</span>
       </div>
       <div class="checklist">
         <div class="check-item" onclick="toggleCheck(this)">
@@ -823,83 +769,6 @@
     requestAnimationFrame(drawDots);
   }
   drawDots();
-  async function loadDashboard() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    if (!username || !password) return;
-
-    document.getElementById('dashboard-row').style.display = 'grid';
-    document.getElementById('dashboard-row').style.gridTemplateColumns = '1fr 1fr';
-    document.getElementById('dashboard-row').style.gap = '10px';
-
-    const fd = new FormData();
-    fd.append('username', username);
-    fd.append('password', password);
-
-    // Load balance
-    try {
-      const res = await fetch(BACKEND_URL + '/balance', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (res.ok) {
-        const rem = data.core_hours_remaining;
-        const used = data.core_hours_used;
-        const total = data.core_hours_total;
-        document.getElementById('bal-remaining').textContent = rem !== null ? rem.toLocaleString() : '—';
-        document.getElementById('bal-used').textContent = used !== null ? used + ' ch' : '—';
-        document.getElementById('bal-storage').textContent = data.storage_gb !== null ? data.storage_gb + ' GB' : '—';
-        document.getElementById('bal-reset').textContent = data.reset_date ? 'Resets ' + data.reset_date : '';
-        if (total && used !== null) {
-          const pct = Math.min(100, Math.round((used / total) * 100));
-          document.getElementById('bal-bar-fill').style.width = pct + '%';
-          document.getElementById('bal-bar-fill').style.background = pct > 80 ? '#c89010' : '#1f6feb';
-          document.getElementById('bal-bar-label').textContent = used + ' / ' + total + ' ch';
-        }
-      }
-    } catch(e) {
-      document.getElementById('bal-remaining').textContent = 'Error';
-    }
-
-    // Load clusters
-    try {
-      const res2 = await fetch(BACKEND_URL + '/clusters', { method: 'POST', body: fd });
-      const data2 = await res2.json();
-      if (res2.ok && data2.clusters.length > 0) {
-        const list = document.getElementById('cluster-list');
-        list.innerHTML = '';
-        data2.clusters.forEach(c => {
-          const avail = c.avail_cores || 0;
-          const total = c.total_cores || 0;
-          const used = total - avail;
-          const pct = total > 0 ? Math.round((used / total) * 100) : 0;
-          let fillClass = 'core-fill-green';
-          let badgeClass = 'cb-open';
-          let badgeText = 'Open';
-          if (pct > 90) { fillClass = 'core-fill-red'; badgeClass = 'cb-full'; badgeText = 'Full'; }
-          else if (pct > 70) { fillClass = 'core-fill-amber'; badgeClass = 'cb-partial'; badgeText = 'Limited'; }
-          const item = document.createElement('div');
-          item.className = 'cluster-item';
-          item.innerHTML =
-            '<span class="cluster-name">' + c.name + '</span>' +
-            '<div class="core-track"><div class="core-fill ' + fillClass + '" style="width:' + pct + '%"></div></div>' +
-            '<span class="core-count">' + avail + ' avail</span>' +
-            '<span class="cluster-badge ' + badgeClass + '">' + badgeText + '</span>';
-          list.appendChild(item);
-        });
-        document.getElementById('cluster-time').textContent = 'Updated ' + new Date().toLocaleTimeString();
-      }
-    } catch(e) {
-      document.getElementById('cluster-list').innerHTML = '<div style="font-size:12px;color:#f85149;">Could not load clusters</div>';
-    }
-  }
-
-  // Trigger dashboard load when both credential fields are filled
-  document.getElementById('username').addEventListener('blur', () => {
-    if (document.getElementById('username').value.trim() && document.getElementById('password').value.trim()) loadDashboard();
-  });
-  document.getElementById('password').addEventListener('blur', () => {
-    if (document.getElementById('username').value.trim() && document.getElementById('password').value.trim()) loadDashboard();
-  });
-
   updatePBSPreview();
   updateCores();
 </script>
