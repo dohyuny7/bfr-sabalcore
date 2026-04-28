@@ -527,33 +527,32 @@
       Submit job to Sabalcore
     </button>
 
-    <div class="status-card hidden" id="status-card">
+        <div class="status-card hidden" id="status-card">
       <div class="card-title">Job status</div>
       <div class="job-header">
         <span class="job-id" id="status-job-id"></span>
-        <span class="state-badge" id="status-badge">...</span>
+        <span class="state-badge state-unknown" id="status-badge">...</span>
       </div>
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-label">Wall time</div>
-          <div class="stat-val" id="status-walltime">00:00:00</div>
+          <div class="stat-val" id="status-walltime">...</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Sim file</div>
           <div class="stat-val" id="status-simfile" style="font-size:12px;word-break:break-all;"></div>
         </div>
       </div>
-      <div class="output-wrap" id="status-output">Waiting for output...</div>
+      <div class="output-wrap" id="status-output">Waiting for status check...</div>
       <div class="btn-row">
-        <button class="btn" onclick="stopPolling()">Stop monitoring</button>
-        <button class="btn btn-primary" onclick="startPolling()">Refresh now</button>
+        <button class="btn btn-primary" onclick="checkStatus()">Check status</button>
         <button class="btn" id="kill-btn" onclick="killJob()" style="border-color:var(--danger-border);color:var(--danger);">Kill job</button>
+        <button class="btn btn-primary" id="download-btn" onclick="downloadSim()" style="display:none;">Download sim</button>
+        <button class="btn" id="clear-btn" onclick="clearBfr()" style="display:none;border-color:var(--warn-border);color:var(--warn);">Clear ~/bfr/</button>
       </div>
     </div>
 
-  </div>
-
-  <div class="view" id="view-manual">
+<div class="view" id="view-manual">
 
     <div>
       <div class="page-title">Manual submission guide</div>
@@ -642,7 +641,6 @@
 <script>
   const BACKEND_URL = 'https://resample-phoniness-partridge.ngrok-free.dev';
   const checks = ['ci-mesh','ci-iter','ci-stop','ci-reports','ci-save'];
-  let pollInterval = null;
   let currentJobId = null;
   let currentCreds = null;
 
@@ -702,6 +700,46 @@
     el.classList.remove('hidden');
   }
 
+  function updateStatusUI(data) {
+    const stateMap = { Q: 'Queued', R: 'Running', C: 'Complete' };
+    const state = data.state || 'unknown';
+    const badge = document.getElementById('status-badge');
+    badge.textContent = stateMap[state] || state;
+    badge.className = 'state-badge state-' + (stateMap[state] ? state : 'unknown');
+    if (data.walltime) document.getElementById('status-walltime').textContent = data.walltime;
+    if (data.output) document.getElementById('status-output').textContent = data.output;
+
+    if (state === 'C') {
+      document.getElementById('download-btn').style.display = 'flex';
+      document.getElementById('clear-btn').style.display = 'flex';
+      document.getElementById('kill-btn').style.display = 'none';
+      setStatus('Job complete. Download your sim or clear ~/bfr/ when done.', 'ok');
+    }
+  }
+
+  async function checkStatus() {
+    if (!currentJobId || !currentCreds) return;
+    const btn = document.querySelector('[onclick="checkStatus()"]');
+    btn.textContent = 'Checking...';
+    btn.disabled = true;
+    try {
+      const params = new URLSearchParams({
+        username: currentCreds.username,
+        password: currentCreds.password,
+        job_id: currentJobId
+      });
+      const res = await fetch(BACKEND_URL + '/status?' + params);
+      const data = await res.json();
+      if (res.ok) updateStatusUI(data);
+      else setStatus('Status check failed: ' + (data.detail || 'Unknown error'), 'error');
+    } catch(e) {
+      setStatus('Could not reach backend. Check that SC1 is running.', 'error');
+    } finally {
+      btn.textContent = 'Check status';
+      btn.disabled = false;
+    }
+  }
+
   async function submitJob() {
     const allChecked = checks.every(id => document.getElementById(id).classList.contains('done'));
     if (!allChecked) { setStatus('Complete the pre-flight checklist first.', 'error'); return; }
@@ -730,69 +768,25 @@
     try {
       const res = await fetch(BACKEND_URL + '/submit', { method: 'POST', body: formData });
       const data = await res.json();
-
-      if (!res.ok) {
-        setStatus('Error: ' + (data.detail || 'Submission failed.'), 'error');
-        return;
-      }
+      if (!res.ok) { setStatus('Error: ' + (data.detail || 'Submission failed.'), 'error'); return; }
 
       currentJobId = data.job_id;
       currentCreds = { username, password };
-      setStatus('Job submitted successfully. Job ID: ' + currentJobId, 'ok');
 
+      setStatus('Job submitted. ID: ' + currentJobId, 'ok');
       document.getElementById('status-card').classList.remove('hidden');
       document.getElementById('status-job-id').textContent = currentJobId;
       document.getElementById('status-simfile').textContent = simFile.name;
-      startPolling();
+      document.getElementById('download-btn').style.display = 'none';
+      document.getElementById('clear-btn').style.display = 'none';
+      document.getElementById('kill-btn').style.display = 'flex';
+      document.getElementById('status-output').textContent = 'Job submitted. Click Check status to see progress.';
 
-    } catch (e) {
-      setStatus('Could not reach the backend. It may be waking up — wait 30 seconds and try again.', 'error');
+    } catch(e) {
+      setStatus('Could not reach backend. SC1 may be offline or ngrok URL changed.', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = 'Submit job to Sabalcore';
-    }
-  }
-
-  function startPolling() {
-    if (pollInterval) clearInterval(pollInterval);
-    fetchStatus();
-    pollInterval = setInterval(fetchStatus, 15000);
-  }
-
-  function stopPolling() {
-    if (pollInterval) clearInterval(pollInterval);
-    pollInterval = null;
-  }
-
-  async function fetchStatus() {
-    if (!currentJobId || !currentCreds) return;
-    try {
-      const params = new URLSearchParams({
-        username: currentCreds.username,
-        password: currentCreds.password,
-        job_id: currentJobId
-      });
-      const res = await fetch(BACKEND_URL + '/status?' + params);
-      const data = await res.json();
-
-      const badge = document.getElementById('status-badge');
-      const stateMap = { Q: 'Queued', R: 'Running', C: 'Complete' };
-      const state = data.state || 'unknown';
-      badge.textContent = stateMap[state] || state;
-      badge.className = 'state-badge state-' + (stateMap[state] ? state : 'unknown');
-
-      document.getElementById('status-walltime').textContent = data.walltime || '00:00:00';
-
-      if (data.output_tail) {
-        document.getElementById('status-output').textContent = data.output_tail;
-      }
-
-      if (state === 'C') {
-        stopPolling();
-        setStatus('Job complete. Transfer results back to your PC via ssClient SFTP.', 'ok');
-      }
-    } catch(e) {
-      console.error('Status fetch failed', e);
     }
   }
 
@@ -810,18 +804,69 @@
       const res = await fetch(BACKEND_URL + '/kill', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok) {
-        stopPolling();
-        setStatus('Job ' + currentJobId + ' killed successfully.', 'ok');
+        setStatus('Job ' + currentJobId + ' killed.', 'ok');
         document.getElementById('status-badge').textContent = 'Killed';
         document.getElementById('status-badge').className = 'state-badge state-unknown';
+        document.getElementById('status-output').textContent = 'Job was killed.';
       } else {
-        setStatus('Failed to kill job: ' + (data.detail || 'Unknown error'), 'error');
+        setStatus('Failed to kill: ' + (data.detail || 'Unknown error'), 'error');
       }
     } catch(e) {
-      setStatus('Could not reach backend to kill job.', 'error');
+      setStatus('Could not reach backend.', 'error');
     } finally {
       btn.textContent = 'Kill job';
       btn.disabled = false;
+    }
+  }
+
+  async function downloadSim() {
+    if (!currentJobId || !currentCreds) return;
+    const btn = document.getElementById('download-btn');
+    btn.textContent = 'Downloading...';
+    btn.disabled = true;
+    try {
+      const params = new URLSearchParams({
+        username: currentCreds.username,
+        password: currentCreds.password,
+        job_id: currentJobId
+      });
+      const res = await fetch(BACKEND_URL + '/download?' + params);
+      if (!res.ok) {
+        const data = await res.json();
+        setStatus('Download failed: ' + (data.detail || 'Unknown error'), 'error');
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get('Content-Disposition') || '';
+      const filename = disposition.split('filename=')[1] || 'result.sim';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    } catch(e) {
+      setStatus('Download failed: ' + e.message, 'error');
+    } finally {
+      btn.textContent = 'Download sim';
+      btn.disabled = false;
+    }
+  }
+
+  async function clearBfr() {
+    if (!currentCreds) return;
+    if (!confirm('Clear all files in ~/bfr/ on Sabalcore? Make sure you have downloaded your results first.')) return;
+    const formData = new FormData();
+    formData.append('username', currentCreds.username);
+    formData.append('password', currentCreds.password);
+    try {
+      const res = await fetch(BACKEND_URL + '/clear', { method: 'POST', body: formData });
+      if (res.ok) {
+        setStatus('~/bfr/ cleared.', 'ok');
+        document.getElementById('status-output').textContent = 'Cleared.';
+        document.getElementById('download-btn').style.display = 'none';
+        document.getElementById('clear-btn').style.display = 'none';
+      }
+    } catch(e) {
+      setStatus('Clear failed: ' + e.message, 'error');
     }
   }
 
