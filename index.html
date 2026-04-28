@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BFR — Sabalcore Job Generator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0f;
+    --bg-card: #16171a;
+    --bg-input: #1e1f23;
+    --bg-hover: #232428;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --text: #f0f0f0;
+    --text-secondary: #888;
+    --text-tertiary: #555;
+    --accent: #e8441a;
+    --accent-dim: rgba(232,68,26,0.12);
+    --accent-border: rgba(232,68,26,0.3);
+    --success: #22c55e;
+    --success-dim: rgba(34,197,94,0.1);
+    --success-border: rgba(34,197,94,0.25);
+    --warn: #f59e0b;
+    --warn-dim: rgba(245,158,11,0.1);
+    --warn-border: rgba(245,158,11,0.25);
+    --mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
+
+  body { min-height: 100vh; padding: 0; }
+
+  .topbar {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(14,14,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+  .logo {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white; letter-spacing: 0.02em;
+  }
+
+  .topbar-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .topbar-sub { font-size: 12px; color: var(--text-secondary); }
+
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .page-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 2rem; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-bottom: 1.25rem;
+  }
+
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--sans);
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .field input::placeholder { color: var(--text-tertiary); }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .field select option { background: #1e1f23; }
+
+  .hint { font-size: 11px; color: var(--text-tertiary); margin-top: 5px; }
+  .hint-warn { font-size: 11px; color: var(--warn); margin-top: 5px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .slider-row { display: flex; align-items: center; gap: 12px; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .slider-val { font-size: 13px; font-weight: 500; color: var(--text); min-width: 28px; text-align: right; }
+  .cores-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  .checklist { display: flex; flex-direction: column; gap: 6px; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px;
+    background: var(--warn-dim);
+    border: 1px solid var(--warn-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .check-item.done {
+    background: var(--success-dim);
+    border-color: var(--success-border);
+  }
+
+  .check-item input[type=checkbox] { margin-top: 2px; accent-color: var(--success); flex-shrink: 0; cursor: pointer; }
+
+  .check-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .check-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
+
+  .checklist-banner {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .banner-warn { background: var(--warn-dim); border: 1px solid var(--warn-border); color: var(--warn); }
+  .banner-ok { background: var(--success-dim); border: 1px solid var(--success-border); color: var(--success); }
+
+  .preview-wrap {
+    background: #0a0a0b;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: #c9d1d9;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .preview-wrap .k { color: #ff7b72; }
+  .preview-wrap .v { color: #79c0ff; }
+  .preview-wrap .c { color: #8b949e; }
+  .preview-wrap .s { color: #a5d6ff; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
+
+  .btn {
+    height: 38px; padding: 0 18px;
+    font-size: 13px; font-weight: 500;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--sans);
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text);
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: white;
+  }
+  .btn-primary:hover { background: #d03a15; }
+
+  .steps { display: flex; flex-direction: column; }
+
+  .step {
+    display: flex; gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+  .step-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+  .cmd-block {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    background: #0a0a0b;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #79c0ff;
+  }
+
+  .copy-btn {
+    font-size: 11px; color: var(--text-tertiary);
+    cursor: pointer; background: none; border: none;
+    font-family: var(--sans); padding: 0; flex-shrink: 0;
+    transition: color 0.1s;
+  }
+  .copy-btn:hover { color: var(--text); }
+  .copy-btn.copied { color: var(--success); }
+
+  .state-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 20px;
+    margin-left: 6px;
+  }
+  .pill-q { background: var(--warn-dim); color: var(--warn); border: 1px solid var(--warn-border); }
+  .pill-r { background: var(--success-dim); color: var(--success); border: 1px solid var(--success-border); }
+  .pill-c { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: var(--bg-input);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #a5d6ff;
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 1.5rem 1rem 3rem; }
+    .row { grid-template-columns: 1fr; }
+    .topbar { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">BFR</div>
+    <div>
+      <div class="topbar-title">Sabalcore Job Generator</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="status-dot"></div>
+    <span style="font-size:12px;color:var(--text-secondary);">Internal tool</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div>
+    <div class="page-title">PBS job configurator</div>
+    <div class="page-sub">Fill out the form, complete the pre-flight checklist, then download your <code>run.pbs</code> file.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Pre-flight checklist</div>
+    <div class="checklist">
+      <label class="check-item" id="ci-mesh" onclick="toggleCheck('ci-mesh','cb-mesh')">
+        <input type="checkbox" id="cb-mesh" onclick="event.stopPropagation();toggleCheck('ci-mesh','cb-mesh')">
+        <div>
+          <div class="check-label">Mesh cleared in STAR-CCM+</div>
+          <div class="check-sub">File → Clear Generated Mesh before saving. Sabalcore handles meshing — do not submit a pre-meshed sim.</div>
+        </div>
+      </label>
+      <label class="check-item" id="ci-iter" onclick="toggleCheck('ci-iter','cb-iter')">
+        <input type="checkbox" id="cb-iter" onclick="event.stopPropagation();toggleCheck('ci-iter','cb-iter')">
+        <div>
+          <div class="check-label">Max iterations set to 800</div>
+          <div class="check-sub">Stopping Criteria → Maximum Steps → 800. This is the hard fallback limit.</div>
+        </div>
+      </label>
+      <label class="check-item" id="ci-stop" onclick="toggleCheck('ci-stop','cb-stop')">
+        <input type="checkbox" id="cb-stop" onclick="event.stopPropagation();toggleCheck('ci-stop','cb-stop')">
+        <div>
+          <div class="check-label">Convergence stopping criterion enabled</div>
+          <div class="check-sub">Stopping Criteria — confirm the drag convergence criterion is active, not just defined. Easy to accidentally leave disabled.</div>
+        </div>
+      </label>
+      <label class="check-item" id="ci-reports" onclick="toggleCheck('ci-reports','cb-reports')">
+        <input type="checkbox" id="cb-reports" onclick="event.stopPropagation();toggleCheck('ci-reports','cb-reports')">
+        <div>
+          <div class="check-label">Force reports configured correctly</div>
+          <div class="check-sub">Drag, downforce, and moment reports set to correct reference area, direction, and coordinate system.</div>
+        </div>
+      </label>
+      <label class="check-item" id="ci-save" onclick="toggleCheck('ci-save','cb-save')">
+        <input type="checkbox" id="cb-save" onclick="event.stopPropagation();toggleCheck('ci-save','cb-save')">
+        <div>
+          <div class="check-label">Sim saved as STAR-CCM+ 2506</div>
+          <div class="check-sub">File → Save. Confirm version 2506 / 20.04.007 is shown in the title bar before transferring.</div>
+        </div>
+      </label>
+    </div>
+    <div class="checklist-banner banner-warn" id="checklist-banner">0 / 5 complete — finish checklist before submitting a job.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Job configuration</div>
+    <div class="field">
+      <label>Simulation filename</label>
+      <input type="text" id="simfile" placeholder="e.g. BFR25_fullcar_v3.sim" oninput="updateAll()">
+      <div class="hint">Exact filename including .sim extension — must match what you transfer via SFTP</div>
+    </div>
+    <div class="field">
+      <label>PoD license key</label>
+      <input type="text" id="podkey" placeholder="Paste PoD key here" oninput="updateAll()">
+      <div class="hint-warn">Keep this private — do not share screenshots or files with this key visible</div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Job name</label>
+        <input type="text" id="jobname" value="BFR_run" oninput="updateAll()">
+      </div>
+      <div class="field">
+        <label>Run mode</label>
+        <select id="runmode" onchange="updateAll()">
+          <option value="mesh,run">Mesh + solve (default)</option>
+          <option value="run">Solve only (pre-meshed)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Cores per node</label>
+        <select id="ppn" onchange="updateAll()">
+          <option value="16" selected>16 cores / node</option>
+          <option value="24">24 cores / node</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Nodes — <span id="nodes-label">8</span></label>
+        <div class="slider-row">
+          <input type="range" min="1" max="16" value="8" id="nodes" step="1" oninput="updateAll()">
+          <span class="slider-val" id="nodes-val">8</span>
+        </div>
+        <div class="cores-badge" id="cores-badge">128 total cores</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Generated run.pbs</div>
+    <div class="preview-wrap" id="preview"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="downloadPBS()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 6l3.5 4 3.5-4M1 11h12" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Download run.pbs
+      </button>
+      <button class="btn" id="copy-pbs-btn" onclick="copyPBS()">Copy to clipboard</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Submission steps</div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Transfer files to Sabalcore</div>
+          <div class="step-desc">In ssClient go to <strong>Tools → SFTP File Transfers</strong>. Left pane = your PC, right pane = Sabalcore. Navigate to <code>~/bfr/</code> on the right. Transfer your <code id="s1-sim">.sim file</code> and <code>run.pbs</code>.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Navigate to the job folder</div>
+          <div class="cmd-block"><span>cd ~/bfr</span><button class="copy-btn" onclick="copyCmd(this,'cd ~/bfr')">copy</button></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Fix Windows line endings</div>
+          <div class="step-desc">Always run this before submitting — the file was created on Windows.</div>
+          <div class="cmd-block"><span>dos2unix run.pbs</span><button class="copy-btn" onclick="copyCmd(this,'dos2unix run.pbs')">copy</button></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Submit the job</div>
+          <div class="cmd-block"><span>qsub run.pbs</span><button class="copy-btn" onclick="copyCmd(this,'qsub run.pbs')">copy</button></div>
+          <div class="step-desc" style="margin-top:6px;">You will get a job ID like <code>1477892.jman</code> — note it down.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Monitor the job</div>
+          <div class="cmd-block"><span>watch -n 5 qstat</span><button class="copy-btn" onclick="copyCmd(this,'watch -n 5 qstat')">copy</button></div>
+          <div class="step-desc" style="margin-top:8px;">
+            <span class="state-pill pill-q">Q</span> queued — no charge &nbsp;
+            <span class="state-pill pill-r">R</span> running — credits burning &nbsp;
+            <span class="state-pill pill-c">C</span> complete
+            <br><br>Press <code>Ctrl+C</code> to stop watching.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">Watch live solver output while running</div>
+          <div class="cmd-block"><span>tail -f ~/.pbs_spool/JOBID.jman.OU</span><button class="copy-btn" onclick="copyCmd(this,'tail -f ~/.pbs_spool/JOBID.jman.OU')">copy</button></div>
+          <div class="step-desc" style="margin-top:6px;">Replace <code>JOBID</code> with your actual job number. You will see residuals and force reports live. <code>Ctrl+C</code> to stop.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <div class="step-title">Check output after completion</div>
+          <div class="step-desc">Output files appear in <code>~/bfr/</code> after the job finishes.</div>
+          <div class="cmd-block" style="margin-top:8px;"><span id="s7-out">cat ~/bfr/BFR_run.oJOBID</span><button class="copy-btn" onclick="copyCmd(this,document.getElementById('s7-out').textContent)">copy</button></div>
+          <div class="cmd-block" style="margin-top:6px;"><span id="s7-err">cat ~/bfr/BFR_run.eJOBID</span><button class="copy-btn" onclick="copyCmd(this,document.getElementById('s7-err').textContent)">copy</button></div>
+          <div class="step-desc" style="margin-top:6px;">The <code>.e</code> file should be empty if successful. The <code>.o</code> file has all residuals and force output.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">8</div>
+        <div class="step-content">
+          <div class="step-title">Transfer results back to your PC</div>
+          <div class="step-desc">Use ssClient SFTP to pull <code id="s8-sim">_complete.sim</code> and any results files back to your local machine for post-processing.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const checks = ['ci-mesh','ci-iter','ci-stop','ci-reports','ci-save'];
+
+  function toggleCheck(itemId, cbId) {
+    const cb = document.getElementById(cbId);
+    cb.checked = !cb.checked;
+    const item = document.getElementById(itemId);
+    item.classList.toggle('done', cb.checked);
+    updateBanner();
+  }
+
+  function updateBanner() {
+    const done = checks.filter(id => document.getElementById(id).classList.contains('done')).length;
+    const banner = document.getElementById('checklist-banner');
+    if (done === checks.length) {
+      banner.textContent = 'All checks passed — ready to submit.';
+      banner.className = 'checklist-banner banner-ok';
+    } else {
+      banner.textContent = `${done} / ${checks.length} complete — finish checklist before submitting a job.`;
+      banner.className = 'checklist-banner banner-warn';
+    }
+  }
+
+  function getPBSContent() {
+    const simfile = document.getElementById('simfile').value.trim() || 'YOURFILE.sim';
+    const podkey = document.getElementById('podkey').value.trim() || 'YOUR_POD_KEY';
+    const jobname = document.getElementById('jobname').value.trim() || 'BFR_run';
+    const runmode = document.getElementById('runmode').value;
+    const nodes = document.getElementById('nodes').value;
+    const ppn = document.getElementById('ppn').value;
+    return `#PBS -l nodes=${nodes}:red:ppn=${ppn}\n#PBS -l nodes+=${nodes}:copper:ppn=${ppn}\n#PBS -l nodes++=${nodes}:blue:ppn=${ppn}\n#PBS -N ${jobname}\n\ncd $PBS_O_WORKDIR\n\nmodule load starccm/20.04.007\n\nstarccm+ -power -podkey ${podkey} -np $PBS_NP -batch ${runmode} ${simfile}`;
+  }
+
+  function syntaxHighlight(text) {
+    return text
+      .replace(/(#PBS)/g, '<span class="k">$1</span>')
+      .replace(/(-l|-N|-np|-batch|-power|-podkey)/g, '<span class="k">$1</span>')
+      .replace(/(module load|cd|starccm\+)/g, '<span class="v">$1</span>')
+      .replace(/(starccm\/20\.04\.007|\$PBS_O_WORKDIR|\$PBS_NP)/g, '<span class="s">$1</span>');
+  }
+
+  function updateAll() {
+    const nodes = parseInt(document.getElementById('nodes').value);
+    const ppn = parseInt(document.getElementById('ppn').value);
+    const total = nodes * ppn;
+    document.getElementById('nodes-val').textContent = nodes;
+    document.getElementById('nodes-label').textContent = nodes;
+    document.getElementById('cores-badge').textContent = `${total} total cores`;
+
+    document.getElementById('preview').innerHTML = syntaxHighlight(getPBSContent());
+
+    const simfile = document.getElementById('simfile').value.trim();
+    const jobname = document.getElementById('jobname').value.trim() || 'BFR_run';
+
+    if (simfile) {
+      document.getElementById('s1-sim').textContent = simfile;
+      document.getElementById('s8-sim').textContent = simfile.replace('.sim','') + '_complete.sim';
+    }
+    document.getElementById('s7-out').textContent = `cat ~/bfr/${jobname}.oJOBID`;
+    document.getElementById('s7-err').textContent = `cat ~/bfr/${jobname}.eJOBID`;
+  }
+
+  function downloadPBS() {
+    const content = getPBSContent();
+    const blob = new Blob([content], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'run.pbs';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function copyPBS() {
+    navigator.clipboard.writeText(getPBSContent()).then(() => {
+      const btn = document.getElementById('copy-pbs-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy to clipboard', 2000);
+    });
+  }
+
+  function copyCmd(btn, cmd) {
+    navigator.clipboard.writeText(cmd).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  updateAll();
+</script>
+</body>
+</html>
