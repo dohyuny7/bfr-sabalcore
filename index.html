@@ -360,6 +360,19 @@
           </select>
         </div>
       </div>
+      <div class="field" style="margin-bottom:12px;">
+        <label>Cluster partition</label>
+        <select id="cluster" onchange="updateClusterHint(); updatePBSPreview();">
+          <option value="">Any (scheduler decides)</option>
+          <option value="green">green — Gold 6244, 3.6 GHz, HDR-100 &middot; Best for CFD</option>
+          <option value="onyx">onyx — E5-2667v2, 3.3 GHz, EDR &middot; Older, decent clock</option>
+          <option value="red">red — E5-2667v3, 3.2 GHz, EDR &middot; Haswell, reliable</option>
+          <option value="blue">blue — Gold 6154, 3.0 GHz, HDR-200 &middot; Best interconnect, slower clock</option>
+          <option value="cobalt">cobalt — E5-2687W, 3.1 GHz, FDR &middot; Small pool, 6 nodes only</option>
+          <option value="copper">copper — E5-2697v2, 2.7 GHz, FDR &middot; Slowest — avoid</option>
+        </select>
+        <div class="hint-warn" id="cluster-hint" style="margin-top:6px;display:none;"></div>
+      </div>
       <div class="row">
         <div class="field">
           <label>Cores per node</label>
@@ -569,18 +582,41 @@
     }
   }
 
-  // FIX: single #PBS -l nodes= line — the nodes++/nodes+ notation allocates
-  // ALL three partitions simultaneously (not fallback/priority order), which
-  // triples the requested core count. A single line lets Sabalcore assign nodes
-  // from whichever partitions are available without multiplying allocation.
+  // Cluster hint messages
+  const CLUSTER_HINTS = {
+    '':       null,
+    'green':  '✓ Recommended. Gold 6244 at 3.6 GHz + HDR-100 InfiniBand. Fastest per-core performance on the cluster. 16 nodes / 256 cores max — may queue longer when busy.',
+    'onyx':   'Ivy Bridge E5-2667v2 at 3.3 GHz + EDR. Older generation but decent clock. 23 nodes available.',
+    'red':    'Haswell E5-2667v3 at 3.2 GHz + EDR. Reliable and available (24 nodes). Slightly slower than green.',
+    'blue':   'Skylake Gold 6154 at 3.0 GHz + HDR-200 InfiniBand (fastest interconnect on cluster). Slower clock hurts serial phases like meshing. 36 cores/node — set ppn=36 for full node.',
+    'cobalt': 'E5-2687W at 3.1 GHz + FDR. Only 6 nodes (96 cores total). Good for small jobs, limited scaling.',
+    'copper': '⚠ Avoid. E5-2697v2 at 2.7 GHz + FDR — slowest clock and slowest interconnect on the cluster. ~2.5× slower than green on full-car RANS.',
+  };
+
+  function updateClusterHint() {
+    const val = document.getElementById('cluster').value;
+    const hint = document.getElementById('cluster-hint');
+    if (CLUSTER_HINTS[val]) {
+      hint.textContent = CLUSTER_HINTS[val];
+      hint.style.display = 'block';
+      hint.style.color = val === 'copper' ? '#f85149' : val === 'green' ? '#3fb950' : '#c89820';
+      hint.style.borderColor = val === 'copper' ? 'rgba(248,81,73,0.3)' : val === 'green' ? 'rgba(63,185,80,0.3)' : 'rgba(253,181,21,0.35)';
+      hint.style.background = val === 'copper' ? 'rgba(248,81,73,0.06)' : val === 'green' ? 'rgba(63,185,80,0.06)' : 'rgba(253,181,21,0.07)';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+
   function getPBSContent() {
     const simfile = (document.getElementById('sim-file').files[0] || {name: 'YOURFILE.sim'}).name;
     const jobname = document.getElementById('job-name').value.trim() || 'BFR_run';
     const runmode = document.getElementById('run-mode').value;
     const nodes = document.getElementById('nodes').value;
     const ppn = document.getElementById('ppn').value;
+    const cluster = document.getElementById('cluster').value;
+    const nodespec = cluster ? nodes + ':' + cluster + ':ppn=' + ppn : nodes + ':ppn=' + ppn;
     const nl = '\n';
-    return '#PBS -l nodes=' + nodes + ':ppn=' + ppn + nl +
+    return '#PBS -l nodes=' + nodespec + nl +
       '#PBS -N ' + jobname + nl + nl +
       'cd $PBS_O_WORKDIR' + nl + nl +
       'module load starccm/20.04.007' + nl + nl +
@@ -701,6 +737,7 @@
     fd.append('run_mode', document.getElementById('run-mode').value);
     fd.append('nodes', document.getElementById('nodes').value);
     fd.append('ppn', document.getElementById('ppn').value);
+    fd.append('cluster', document.getElementById('cluster').value);
     try {
       const res = await fetch(BACKEND_URL + '/submit', { method: 'POST', body: fd });
       const data = await res.json();
