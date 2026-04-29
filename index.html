@@ -481,6 +481,16 @@
     </div>
 
     <div class="card">
+      <div class="section-header"><div class="section-num">8</div><span class="section-title">Cluster health checks</span></div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Check cluster availability and node load before submitting. Always run upnodes first on production runs.</p>
+      <div class="manual-cmd"><span>upnodes</span><button class="copy-btn" onclick="copyCmd(this,'upnodes')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>pbsnodes -a | grep -E "loadave|jobs=" | grep -v "^--"</span><button class="copy-btn" onclick="copyCmd(this,'pbsnodes -a | grep -E "loadave|jobs=" | grep -v "^--"')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>pbsnodes NODE | grep loadave</span><button class="copy-btn" onclick="copyCmd(this,'pbsnodes NODE | grep loadave')">copy</button></div>
+      <div class="manual-cmd" style="margin-top:6px;"><span>tracejob JOBID</span><button class="copy-btn" onclick="copyCmd(this,'tracejob JOBID')">copy</button></div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-top:8px;"><code>upnodes</code> shows per-partition availability. <code>pbsnodes</code> shows individual node load. <code>tracejob</code> recovers wall time and resource usage for completed jobs. Replace NODE and JOBID with actual values.</p>
+    </div>
+
+    <div class="card">
       <div class="section-header"><div class="section-num">6</div><span class="section-title">Credit & usage</span></div>
       <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Check your allocation balance and job history.</p>
       <div class="manual-cmd"><span>mybalance</span><button class="copy-btn" onclick="copyCmd(this,'mybalance')">copy</button></div>
@@ -607,6 +617,10 @@
     }
   }
 
+  // Sabalcore fix (John Van Workum, Apr 29 2026):
+  // tail -n +2 skips master node from PBS_NODEFILE — master node is consistently
+  // oversubscribed. Worker nodes run the solver cleanly. -mpi openmpi and
+  // -machinefile are required when not using $PBS_NP directly.
   function getPBSContent() {
     const simfile = (document.getElementById('sim-file').files[0] || {name: 'YOURFILE.sim'}).name;
     const jobname = document.getElementById('job-name').value.trim() || 'BFR_run';
@@ -620,16 +634,18 @@
       '#PBS -N ' + jobname + nl + nl +
       'cd $PBS_O_WORKDIR' + nl + nl +
       'module load starccm/20.04.007' + nl + nl +
-      'starccm+ -power -podkey [POD_KEY] -np $PBS_NP -batch ' + runmode + ' ' + simfile;
+      'tail -n +2 $PBS_NODEFILE > machinefile' + nl +
+      'NP=$(cat machinefile | wc -l)' + nl + nl +
+      'starccm+ -power -podkey [POD_KEY] -mpi openmpi -machinefile machinefile -np $NP -batch ' + runmode + ' ' + simfile;
   }
 
   function updatePBSPreview() {
     const content = getPBSContent();
     document.getElementById('pbs-preview').innerHTML = content
       .replace(/(#PBS)/g, '<span class="k">$1</span>')
-      .replace(/(-l|-N|-np|-batch|-power|-podkey)/g, '<span class="k">$1</span>')
-      .replace(/(module load|cd|starccm\+)/g, '<span class="v">$1</span>')
-      .replace(/(starccm\/20\.04\.007|\$PBS_O_WORKDIR|\$PBS_NP)/g, '<span class="s">$1</span>');
+      .replace(/(-l|-N|-np|-batch|-power|-podkey|-mpi|-machinefile)/g, '<span class="k">$1</span>')
+      .replace(/(module load|cd|starccm\+|tail|NP=)/g, '<span class="v">$1</span>')
+      .replace(/(starccm\/20\.04\.007|\$PBS_O_WORKDIR|\$PBS_NP|\$PBS_NODEFILE|\$NP|machinefile)/g, '<span class="s">$1</span>');
   }
 
   function downloadPBS() {
