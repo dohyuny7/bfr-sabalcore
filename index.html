@@ -272,6 +272,8 @@
   <div class="tabs">
     <div class="tab active" onclick="switchTab('submit')">Submit job</div>
     <div class="tab-sep"></div>
+    <div class="tab" onclick="switchTab('cluster')">Cluster</div>
+    <div class="tab-sep"></div>
     <div class="tab" onclick="switchTab('manual')">Manual guide</div>
   </div>
 </div>
@@ -281,7 +283,7 @@
   <div class="view" id="view-submit">
 
     <div class="notice">
-      The Sabalcore terminal does not support Ctrl+V. Use <strong style="color:#7aa8d8;">Shift+Insert</strong> to paste in the terminal instead.
+      <strong style="color:#7aa8d8;">Workflow:</strong> Upload your .sim file to Sabalcore via ssClient first, then configure and submit your job here. The Sabalcore terminal does not support Ctrl+V — use <strong style="color:#7aa8d8;">Shift+Insert</strong> to paste.
     </div>
 
     <div class="status-banner" id="status-banner"></div>
@@ -298,7 +300,7 @@
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="cb"></div>
-          <div><div class="check-label">Max iterations set to 800</div><div class="check-sub">Stopping Criteria → Maximum Steps → 800</div></div>
+          <div><div class="check-label">Max iterations set to 400–500</div><div class="check-sub">Stopping Criteria → Maximum Steps → 400 to 500. Full car converges well before 800 — saves credits.</div></div>
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="cb"></div>
@@ -312,10 +314,14 @@
           <div class="cb"></div>
           <div><div class="check-label">Sim saved as STAR-CCM+ 2506</div><div class="check-sub">Confirm version in title bar before transferring</div></div>
         </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="cb"></div>
+          <div><div class="check-label">Sim file uploaded to ~/bfr/ via ssClient</div><div class="check-sub">ssClient → Tools → SFTP File Transfers → navigate to ~/bfr/ on right pane → transfer your .sim file</div></div>
+        </div>
       </div>
       <div class="progress-row">
         <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-        <span class="prog-label" id="prog-label">0 / 5 — complete checklist first</span>
+        <span class="prog-label" id="prog-label">0 / 6 — complete checklist first</span>
       </div>
     </div>
 
@@ -334,7 +340,7 @@
           <input type="password" id="password" placeholder="Sabalcore password">
         </div>
       </div>
-      <div class="hint" style="margin-top:6px;">Credentials are used only to transfer files and submit. Never stored.</div>
+      <div class="hint" style="margin-top:6px;">Credentials are used only to verify your sim file exists and submit the job. Never stored.</div>
     </div>
 
     <div class="card">
@@ -343,9 +349,10 @@
         <span class="section-title">Job configuration</span>
       </div>
       <div class="field" style="margin-bottom:12px;">
-        <label>Simulation file</label>
-        <input type="file" id="sim-file" accept=".sim" onchange="onFileChange()">
-        <div class="hint" id="file-hint">Select your .sim file. Max 200 MB.</div>
+        <label>Simulation filename</label>
+        <input type="text" id="sim-filename" placeholder="e.g. fullcar.sim" oninput="updatePBSPreview()">
+        <div class="hint" style="margin-top:4px;">Enter the exact filename of your .sim file as it appears in <code>~/bfr/</code> on Sabalcore. The backend verifies it exists before submitting.</div>
+        <div class="hint-warn" id="filename-warn" style="margin-top:6px;display:none;">File not found in ~/bfr/ — upload it via ssClient first.</div>
       </div>
       <div class="row" style="margin-bottom:12px;">
         <div class="field">
@@ -432,12 +439,51 @@
       </div>
       <div class="output-box" id="output-box">Submit a job to see status here.</div>
       <div class="sftp-block">
-        <strong>To download results:</strong> open ssClient → Tools → SFTP File Transfers → navigate to <strong>~/bfr/</strong> on the right pane → transfer your completed .sim and output files to your PC.
+        <strong>To download results:</strong> open ssClient → Tools → SFTP File Transfers → navigate to <strong>~/bfr/</strong> on the right pane → transfer your completed <strong>.sim</strong> file and the <strong>.o</strong> output file to your PC. The output file is named <strong>JOBNAME.oJOBID</strong> and contains all iteration data and force monitor values.
       </div>
       <div class="btn-row">
         <button class="btn btn-danger" onclick="killJob(); rippleEl(this)" id="kill-btn">Kill job</button>
         <button class="btn btn-warn" onclick="clearBfr(); rippleEl(this)" id="clear-btn">Clear ~/bfr/</button>
       </div>
+    </div>
+
+  </div>
+
+
+  <div class="view hidden" id="view-cluster">
+
+    <div class="notice" id="cluster-notice">
+      Enter your credentials in Section 2, then open this tab to monitor the cluster.
+    </div>
+
+    <div class="card" id="cluster-balance-card" style="display:none;">
+      <div class="section-header">
+        <div class="section-num" style="background:var(--gold);color:#0d1117;">CH</div>
+        <span class="section-title">Core-hour balance</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);" id="cluster-last-updated"></span>
+        <button class="btn btn-ghost" style="height:26px;padding:0 10px;font-size:11px;margin-left:8px;" onclick="fetchClusterStatus()">Refresh</button>
+      </div>
+      <div id="balance-rows" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text-tertiary);">Total available</span>
+        <span style="font-size:18px;font-weight:700;color:var(--gold);" id="balance-total">—</span>
+      </div>
+    </div>
+
+    <div class="card" id="cluster-partitions-card" style="display:none;">
+      <div class="section-header">
+        <div class="section-num">P</div>
+        <span class="section-title">Partition availability</span>
+      </div>
+      <div id="partition-rows" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <div class="card" id="cluster-jobs-card" style="display:none;">
+      <div class="section-header">
+        <div class="section-num">J</div>
+        <span class="section-title">Your active jobs</span>
+      </div>
+      <div id="jobs-rows"></div>
     </div>
 
   </div>
@@ -481,7 +527,7 @@
     </div>
 
     <div class="card">
-      <div class="section-header"><div class="section-num">8</div><span class="section-title">Cluster health checks</span></div>
+      <div class="section-header"><div class="section-num">6</div><span class="section-title">Cluster health checks</span></div>
       <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Check cluster availability and node load before submitting. Always run upnodes first on production runs.</p>
       <div class="manual-cmd"><span>upnodes</span><button class="copy-btn" onclick="copyCmd(this,'upnodes')">copy</button></div>
       <div class="manual-cmd" style="margin-top:6px;"><span>pbsnodes -a | grep -E "loadave|jobs=" | grep -v "^--"</span><button class="copy-btn" onclick="copyCmd(this,'pbsnodes -a | grep -E "loadave|jobs=" | grep -v "^--"')">copy</button></div>
@@ -491,7 +537,7 @@
     </div>
 
     <div class="card">
-      <div class="section-header"><div class="section-num">6</div><span class="section-title">Credit & usage</span></div>
+      <div class="section-header"><div class="section-num">7</div><span class="section-title">Credit & usage</span></div>
       <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Check your allocation balance and job history.</p>
       <div class="manual-cmd"><span>mybalance</span><button class="copy-btn" onclick="copyCmd(this,'mybalance')">copy</button></div>
       <div class="manual-cmd" style="margin-top:6px;"><span>myusage</span><button class="copy-btn" onclick="copyCmd(this,'myusage')">copy</button></div>
@@ -501,7 +547,7 @@
     </div>
 
     <div class="card">
-      <div class="section-header"><div class="section-num">7</div><span class="section-title">Inspect a job</span></div>
+      <div class="section-header"><div class="section-num">8</div><span class="section-title">Inspect a job</span></div>
       <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">Full job details including node allocation, state, and resource usage.</p>
       <div class="manual-cmd"><span>qstat -f JOBID.jman</span><button class="copy-btn" onclick="copyCmd(this,'qstat -f JOBID.jman')">copy</button></div>
       <div class="manual-cmd" style="margin-top:6px;"><span>qstat</span><button class="copy-btn" onclick="copyCmd(this,'qstat')">copy</button></div>
@@ -521,12 +567,172 @@
   let currentCreds = null;
   let eventSource = null;
 
+
+  // ── CLUSTER MONITOR ────────────────────────────────────────────────────
+  let clusterRefreshTimer = null;
+  const PARTITION_META = {
+    green:  { recommended: true,  warn: false, label: 'Best for CFD' },
+    red:    { recommended: false, warn: false, label: 'Reliable' },
+    onyx:   { recommended: false, warn: false, label: 'Older gen' },
+    blue:   { recommended: false, warn: false, label: 'Best interconnect' },
+    cobalt: { recommended: false, warn: false, label: 'Small pool' },
+    copper: { recommended: false, warn: true,  label: 'Avoid — slowest' },
+  };
+
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
     document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
     document.getElementById('view-' + tab).classList.remove('hidden');
+    if (tab === 'cluster') {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      if (u && p) {
+        fetchClusterStatus();
+        if (!clusterRefreshTimer) {
+          clusterRefreshTimer = setInterval(fetchClusterStatus, 60000);
+        }
+      } else {
+        document.getElementById('cluster-notice').style.display = 'block';
+      }
+    } else {
+      if (clusterRefreshTimer) { clearInterval(clusterRefreshTimer); clusterRefreshTimer = null; }
+    }
   }
+
+  async function fetchClusterStatus() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    if (!username || !password) {
+      document.getElementById('cluster-notice').textContent = 'Enter your credentials in Section 2 first.';
+      document.getElementById('cluster-notice').style.display = 'block';
+      return;
+    }
+    document.getElementById('cluster-notice').style.display = 'none';
+
+    const fd = new FormData();
+    fd.append('username', username);
+    fd.append('password', password);
+
+    try {
+      const res = await fetch(BACKEND_URL + '/cluster_status', { method: 'POST', body: fd });
+      if (!res.ok) {
+        document.getElementById('cluster-notice').textContent = 'Could not fetch cluster status. Check credentials.';
+        document.getElementById('cluster-notice').style.display = 'block';
+        return;
+      }
+      const data = await res.json();
+      renderBalance(data.balance);
+      renderPartitions(data.partitions);
+      renderJobs(data.jobs);
+      const now = new Date();
+      document.getElementById('cluster-last-updated').textContent =
+        'Updated ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    } catch(e) {
+      document.getElementById('cluster-notice').textContent = 'Could not reach backend.';
+      document.getElementById('cluster-notice').style.display = 'block';
+    }
+  }
+
+  function renderBalance(balance) {
+    const card = document.getElementById('cluster-balance-card');
+    card.style.display = 'block';
+    const rows = document.getElementById('balance-rows');
+    rows.innerHTML = '';
+    balance.allocations.forEach(a => {
+      const expires = new Date(a.end_date);
+      const now = new Date();
+      const daysLeft = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+      const color = daysLeft < 30 ? 'var(--danger)' : daysLeft < 90 ? '#c89010' : 'var(--text-secondary)';
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);';
+      row.innerHTML = `
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text);">${a.type.charAt(0).toUpperCase()+a.type.slice(1)} allocation${a.description ? ' — ' + a.description : ''}</div>
+          <div style="font-size:10px;color:${color};margin-top:2px;">Expires ${a.end_date} (${daysLeft}d)</div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:var(--accent-bright);">${a.ending.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} CH</div>
+      `;
+      rows.appendChild(row);
+    });
+    document.getElementById('balance-total').textContent =
+      balance.total_ch.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' CH';
+  }
+
+  function renderPartitions(partitions) {
+    const card = document.getElementById('cluster-partitions-card');
+    card.style.display = 'block';
+    const rows = document.getElementById('partition-rows');
+    rows.innerHTML = '';
+
+    // Sort: green first, copper last, rest by avail cores desc
+    const order = ['green','red','onyx','blue','cobalt','copper'];
+    partitions.sort((a,b) => {
+      const ai = order.indexOf(a.name), bi = order.indexOf(b.name);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+
+    partitions.forEach(p => {
+      const meta = PARTITION_META[p.name] || {};
+      const pct = p.pct_used;
+      const barColor = meta.warn ? 'var(--danger)' : meta.recommended ? 'var(--success)' : 'var(--accent)';
+      const borderColor = meta.warn ? 'var(--danger-border)' : meta.recommended ? 'var(--success-border)' : 'var(--border)';
+      const bgColor = meta.warn ? 'var(--danger-dim)' : meta.recommended ? 'var(--success-dim)' : 'var(--bg-input)';
+
+      const row = document.createElement('div');
+      row.style.cssText = `padding:10px 12px;background:${bgColor};border:1px solid ${borderColor};border-radius:var(--radius);`;
+      row.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${p.name}</span>
+            ${meta.recommended ? '<span style="font-size:10px;background:var(--success-dim);color:var(--success);border:1px solid var(--success-border);border-radius:20px;padding:1px 8px;">Recommended</span>' : ''}
+            ${meta.warn ? '<span style="font-size:10px;background:var(--danger-dim);color:var(--danger);border:1px solid var(--danger-border);border-radius:20px;padding:1px 8px;">Avoid</span>' : ''}
+          </div>
+          <span style="font-size:11px;color:var(--text-secondary);font-family:var(--mono);">${p.avail_cores} / ${p.total_cores} cores free</span>
+        </div>
+        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px;">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px;transition:width 0.5s;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-size:10px;color:var(--text-tertiary);">${p.cpu_freq} · ${p.infiniband} · ${p.cpu_model}</span>
+          <span style="font-size:10px;color:var(--text-tertiary);">${pct}% utilized</span>
+        </div>
+      `;
+      rows.appendChild(row);
+    });
+  }
+
+  function renderJobs(jobs) {
+    const card = document.getElementById('cluster-jobs-card');
+    card.style.display = 'block';
+    const rows = document.getElementById('jobs-rows');
+
+    if (jobs.length === 0) {
+      rows.innerHTML = '<div style="font-size:12px;color:var(--text-tertiary);padding:8px 0;">No active jobs.</div>';
+      return;
+    }
+
+    rows.innerHTML = '';
+    jobs.forEach(j => {
+      const stateClass = j.state === 'R' ? 'state-R' : j.state === 'Q' ? 'state-Q' : 'state-unknown';
+      const stateLabel = j.state === 'R' ? 'Running' : j.state === 'Q' ? 'Queued' : j.state;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;';
+      row.innerHTML = `
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--accent-bright);font-family:var(--mono);">${j.job_id}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">${j.name} · ${j.queue}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:11px;color:var(--text-tertiary);font-family:var(--mono);">${j.time}</span>
+          <span class="state-badge ${stateClass}">${stateLabel}</span>
+        </div>
+      `;
+      rows.appendChild(row);
+    });
+  }
+
+
 
   function toggleCheck(el) {
     const cb = el.querySelector('.cb');
@@ -544,13 +750,13 @@
   }
 
   function updateProgress() {
-    const pct = (checkedCount / 5) * 100;
+    const pct = (checkedCount / 6) * 100;
     const fill = document.getElementById('prog-fill');
     const label = document.getElementById('prog-label');
     const num = document.getElementById('num1');
     const btn = document.getElementById('submit-btn');
     fill.style.width = pct + '%';
-    if (checkedCount === 5) {
+    if (checkedCount === 6) {
       fill.style.background = 'var(--gold)';
       fill.classList.add('celebrate');
       setTimeout(() => fill.classList.remove('celebrate'), 500);
@@ -562,7 +768,7 @@
       setTimeout(() => btn.classList.remove('unlock-glow'), 650);
     } else {
       fill.style.background = 'var(--accent)';
-      label.textContent = checkedCount + ' / 5 — complete checklist first';
+      label.textContent = checkedCount + ' / 6 — complete checklist first';
       label.style.color = 'var(--text-tertiary)';
       num.classList.remove('done');
       btn.classList.add('disabled');
@@ -583,14 +789,7 @@
     updatePBSPreview();
   }
 
-  function onFileChange() {
-    const file = document.getElementById('sim-file').files[0];
-    if (file) {
-      const mb = (file.size / 1024 / 1024).toFixed(1);
-      document.getElementById('file-hint').textContent = file.name + ' (' + mb + ' MB)';
-      updatePBSPreview();
-    }
-  }
+  // File upload removed — user uploads directly via ssClient to ~/bfr/ on Sabalcore
 
   // Cluster hint messages
   const CLUSTER_HINTS = {
@@ -622,7 +821,7 @@
   // oversubscribed. Worker nodes run the solver cleanly. -mpi openmpi and
   // -machinefile are required when not using $PBS_NP directly.
   function getPBSContent() {
-    const simfile = (document.getElementById('sim-file').files[0] || {name: 'YOURFILE.sim'}).name;
+    const simfile = document.getElementById('sim-filename').value.trim() || 'YOURFILE.sim';
     const jobname = document.getElementById('job-name').value.trim() || 'BFR_run';
     const runmode = document.getElementById('run-mode').value;
     const nodes = document.getElementById('nodes').value;
@@ -739,16 +938,18 @@
     if (btn.classList.contains('disabled')) return;
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
-    const simFile = document.getElementById('sim-file').files[0];
+    const simFilename = document.getElementById('sim-filename').value.trim();
     if (!username || !password) { showBanner('Enter your Sabalcore username and password.', 'err'); return; }
-    if (!simFile) { showBanner('Select a .sim file to upload.', 'err'); return; }
+    if (!simFilename) { showBanner('Enter the filename of your .sim file (e.g. fullcar.sim).', 'err'); return; }
+    if (!simFilename.endsWith('.sim')) { showBanner('Filename must end in .sim', 'err'); return; }
+    document.getElementById('filename-warn').style.display = 'none';
     btn.disabled = true;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="8 4"><animateTransform attributeName="transform" type="rotate" from="0 7 7" to="360 7 7" dur="0.8s" repeatCount="indefinite"/></circle></svg> Uploading...';
-    showBanner('Uploading ' + simFile.name + ' to Sabalcore...', 'warn');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="8 4"><animateTransform attributeName="transform" type="rotate" from="0 7 7" to="360 7 7" dur="0.8s" repeatCount="indefinite"/></circle></svg> Submitting...';
+    showBanner('Verifying ' + simFilename + ' on Sabalcore and submitting job...', 'warn');
     const fd = new FormData();
-    fd.append('sim_file', simFile);
     fd.append('username', username);
     fd.append('password', password);
+    fd.append('sim_filename', simFilename);
     fd.append('job_name', document.getElementById('job-name').value.trim() || 'BFR_run');
     fd.append('run_mode', document.getElementById('run-mode').value);
     fd.append('nodes', document.getElementById('nodes').value);
@@ -757,17 +958,25 @@
     try {
       const res = await fetch(BACKEND_URL + '/submit', { method: 'POST', body: fd });
       const data = await res.json();
-      if (!res.ok) { showBanner('Error: ' + (data.detail || 'Submission failed.'), 'err'); return; }
+      if (!res.ok) {
+        const detail = data.detail || 'Submission failed.';
+        if (detail.includes('not found in ~/bfr/')) {
+          document.getElementById('filename-warn').style.display = 'block';
+          document.getElementById('filename-warn').textContent = detail;
+        }
+        showBanner('Error: ' + detail, 'err');
+        return;
+      }
       currentJobId = data.job_id;
       currentCreds = { username, password };
       showBanner('Job submitted. ID: ' + currentJobId + '. Live output starting...', 'ok');
       document.getElementById('status-card').classList.remove('hidden');
       document.getElementById('status-job-id').textContent = currentJobId;
-      document.getElementById('status-simfile').textContent = simFile.name;
+      document.getElementById('status-simfile').textContent = simFilename;
       document.getElementById('output-box').textContent = 'Connecting to live output...';
       startTailStream();
     } catch(e) {
-      showBanner('Could not reach backend. Check that SC1 is running and ngrok is active.', 'err');
+      showBanner('Could not reach backend. Check that SC1 is running and Tailscale is connected.', 'err');
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M7 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Submit job to Sabalcore';
