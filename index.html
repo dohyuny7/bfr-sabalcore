@@ -321,7 +321,7 @@
       </div>
       <div class="progress-row">
         <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-        <span class="prog-label" id="prog-label">0 / 6 — complete checklist first</span>
+        <span class="prog-label" id="prog-label">0 / 5 — complete checklist first</span>
       </div>
     </div>
 
@@ -672,6 +672,8 @@
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
 
+    // Filter out partitions with zero total cores (down/unavailable)
+    partitions = partitions.filter(p => p.total_cores > 0);
     partitions.forEach(p => {
       const meta = PARTITION_META[p.name] || {};
       const pct = p.pct_used;
