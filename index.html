@@ -340,6 +340,12 @@
           <input type="password" id="password" placeholder="Sabalcore password">
         </div>
       </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-ghost" id="verify-btn" onclick="verifyConnection(); rippleEl(this)" style="height:30px;font-size:11px;">
+          Verify &amp; Setup ~/bfr/
+        </button>
+        <span id="verify-status" style="font-size:11px;"></span>
+      </div>
       <div class="hint" style="margin-top:6px;">Credentials are used only to verify your sim file exists and submit the job. Never stored.</div>
     </div>
 
@@ -373,12 +379,26 @@
           <option value="">Any (scheduler decides)</option>
           <option value="green">green — Gold 6244, 3.6 GHz, HDR-100 &middot; Best for CFD</option>
           <option value="onyx">onyx — E5-2667v2, 3.3 GHz, EDR &middot; Older, decent clock</option>
-          <option value="red">red — E5-2667v3, 3.2 GHz, EDR &middot; Haswell, reliable</option>
+          <option value="red" selected>red — E5-2667v3, 3.2 GHz, EDR &middot; Haswell, reliable</option>
           <option value="blue">blue — Gold 6154, 3.0 GHz, HDR-200 &middot; Best interconnect, slower clock</option>
           <option value="cobalt">cobalt — E5-2687W, 3.1 GHz, FDR &middot; Small pool, 6 nodes only</option>
           <option value="copper">copper — E5-2697v2, 2.7 GHz, FDR &middot; Slowest — avoid</option>
         </select>
         <div class="hint-warn" id="cluster-hint" style="margin-top:6px;display:none;"></div>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <label>Mesh cell count</label>
+        <select id="mesh-cells" onchange="onMeshCellsChange()">
+          <option value="0">Select mesh size...</option>
+          <option value="1">&lt; 1M cells</option>
+          <option value="5">1 – 5M cells</option>
+          <option value="10">5 – 10M cells</option>
+          <option value="20">10 – 20M cells</option>
+          <option value="30">20 – 30M cells</option>
+          <option value="40" selected>30 – 40M cells — Full car default</option>
+          <option value="50">40 – 50M cells</option>
+        </select>
+        <div class="hint" style="margin-top:4px;" id="mesh-hint">Recommended core count is calculated at ~140k cells/core — empirically validated on BFR full car.</div>
       </div>
       <div class="row">
         <div class="field">
@@ -386,16 +406,17 @@
           <select id="ppn" onchange="updateCores()">
             <option value="16" selected>16 cores / node</option>
             <option value="24">24 cores / node</option>
+            <option value="36">36 cores / node (blue only)</option>
           </select>
         </div>
         <div class="field">
-          <label>Nodes (<span id="nodes-label">4</span>)</label>
+          <label>Nodes (<span id="nodes-label">16</span>) <span id="nodes-rec-badge" style="font-size:10px;color:var(--success);margin-left:4px;"></span></label>
           <div class="slider-row">
-            <input type="range" min="1" max="16" value="4" id="nodes" step="1" oninput="updateCores()">
-            <span style="font-size:12px;font-weight:600;color:#c9d1d9;min-width:20px;" id="nodes-val">4</span>
+            <input type="range" min="1" max="24" value="16" id="nodes" step="1" oninput="updateCores()">
+            <span style="font-size:12px;font-weight:600;color:#c9d1d9;min-width:20px;" id="nodes-val">16</span>
           </div>
-          <div class="cores-pill" id="cores-pill">64 total cores</div>
-          <div class="hint-warn" id="cores-warn" style="margin-top:6px;">Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!</div>
+          <div class="cores-pill" id="cores-pill">256 total cores</div>
+          <div class="hint-warn" id="cores-warn" style="margin-top:6px;display:none;"></div>
         </div>
       </div>
     </div>
@@ -784,14 +805,98 @@
     document.getElementById('nodes-val').textContent = nodes;
     document.getElementById('nodes-label').textContent = nodes;
     document.getElementById('cores-pill').textContent = total + ' total cores';
+    // Warn only if nodes > 16 (green capacity) and not already warned by mesh selector
     const warn = document.getElementById('cores-warn');
-    warn.textContent = total !== 64
-      ? 'You changed the core count to ' + total + '. Keep at 64 unless you know what you are doing. ASK ME IF YOU ARE NOT SURE!!'
-      : "Keep cores at 64 unless you know what you're doing. ASK ME IF YOU'RE NOT SURE!!";
+    if (nodes > 16 && warn.style.display === 'none') {
+      warn.textContent = nodes + ' nodes exceeds green partition capacity (16 max). Use red (24 nodes) or blue.';
+      warn.style.display = 'block';
+    } else if (nodes <= 16) {
+      warn.style.display = 'none';
+    }
     updatePBSPreview();
   }
 
   // File upload removed — user uploads directly via ssClient to ~/bfr/ on Sabalcore
+
+  // Mesh cell count → recommended nodes mapping
+  // Based on ~140k cells/core empirically validated on BFR 37M cell full car
+  const MESH_CELL_NODES = {
+    '0':  { nodes: 16, label: '' },
+    '1':  { nodes: 1,  label: 'Recommended: 1 node (16 cores)' },
+    '5':  { nodes: 3,  label: 'Recommended: 3 nodes (48 cores)' },
+    '10': { nodes: 6,  label: 'Recommended: 6 nodes (96 cores)' },
+    '20': { nodes: 11, label: 'Recommended: 11 nodes (176 cores)' },
+    '30': { nodes: 16, label: 'Recommended: 16 nodes (256 cores)' },
+    '40': { nodes: 16, label: 'Recommended: 16 nodes (256 cores) — BFR full car default' },
+    '50': { nodes: 20, label: 'Recommended: 20 nodes (320 cores) — use red or blue, exceeds green capacity' },
+  };
+
+  function onMeshCellsChange() {
+    const val = document.getElementById('mesh-cells').value;
+    const rec = MESH_CELL_NODES[val];
+    if (!rec) return;
+    const slider = document.getElementById('nodes');
+    slider.value = rec.nodes;
+    document.getElementById('nodes-val').textContent = rec.nodes;
+    document.getElementById('nodes-label').textContent = rec.nodes;
+    document.getElementById('nodes-rec-badge').textContent = rec.label ? '← recommended' : '';
+    // Warn if >16 nodes (exceeds green capacity)
+    const warn = document.getElementById('cores-warn');
+    if (rec.nodes > 16) {
+      warn.textContent = rec.nodes + ' nodes exceeds green partition capacity (16 max). Use red (24 nodes) or blue for this mesh size.';
+      warn.style.display = 'block';
+      // Auto-switch cluster hint
+      const clusterEl = document.getElementById('cluster');
+      if (clusterEl.value === 'green' || clusterEl.value === '') {
+        clusterEl.value = 'red';
+        updateClusterHint();
+      }
+    } else {
+      warn.style.display = 'none';
+    }
+    updateCores();
+  }
+
+  async function verifyConnection() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const btn = document.getElementById('verify-btn');
+    const status = document.getElementById('verify-status');
+    if (!username || !password) {
+      status.textContent = 'Enter username and password first.';
+      status.style.color = 'var(--danger)';
+      return;
+    }
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+    status.textContent = '';
+    const fd = new FormData();
+    fd.append('username', username);
+    fd.append('password', password);
+    try {
+      const res = await fetch(BACKEND_URL + '/setup', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        status.textContent = '✓ ' + data.message;
+        status.style.color = 'var(--success)';
+        btn.textContent = '✓ Connected';
+        // Auto-fetch cluster status if on cluster tab
+        if (document.getElementById('view-cluster') && !document.getElementById('view-cluster').classList.contains('hidden')) {
+          fetchClusterStatus();
+        }
+      } else {
+        status.textContent = '✗ ' + (data.detail || 'Connection failed');
+        status.style.color = 'var(--danger)';
+        btn.textContent = 'Verify & Setup ~/bfr/';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      status.textContent = '✗ Could not reach backend.';
+      status.style.color = 'var(--danger)';
+      btn.textContent = 'Verify & Setup ~/bfr/';
+      btn.disabled = false;
+    }
+  }
 
   // Cluster hint messages
   const CLUSTER_HINTS = {
@@ -1054,8 +1159,9 @@
     requestAnimationFrame(drawDots);
   }
   drawDots();
+  onMeshCellsChange();
+  updateClusterHint();
   updatePBSPreview();
-  updateCores();
 </script>
 </body>
 </html>
